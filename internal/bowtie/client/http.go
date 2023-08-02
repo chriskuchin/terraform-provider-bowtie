@@ -62,8 +62,6 @@ func (c *Client) doRequest(req *http.Request) ([]byte, error) {
 		return nil, err
 	}
 
-	fmt.Printf("%s\n\n", body)
-
 	return body, nil
 }
 

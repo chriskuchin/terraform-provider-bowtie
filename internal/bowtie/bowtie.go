@@ -148,6 +148,7 @@ func (b *BowtieProvider) Configure(ctx context.Context, req provider.ConfigureRe
 
 func (b *BowtieProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
+		resources.NewDNSResource,
 		resources.NewGroupResource,
 		resources.NewSiteResource,
 		resources.NewSiteRangeResource,

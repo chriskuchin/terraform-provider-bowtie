@@ -80,21 +80,17 @@ type siteRangePayload struct {
 	Range       string `json:"range"`
 	IsV4        bool   `json:"is_v4"`
 	IsV6        bool   `json:"is_v6"`
-	Weight      int    `json:"weight"`
-	Metric      int    `json:"metric"`
+	Weight      int64  `json:"weight"`
+	Metric      int64  `json:"metric"`
 }
 
-func (c *Client) CreateSiteRange(siteID, name, description, cidr string, isV4, isV6 bool, weight, metric int) (string, error) {
+func (c *Client) CreateSiteRange(siteID, name, description, cidr string, isV4, isV6 bool, weight, metric int64) (string, error) {
 	id := uuid.NewString()
-	err := c.UpsertSiteRange(siteID, id, name, description, cidr, isV4, isV6, weight, metric)
-	if err != nil {
-		return "", err
-	}
 
-	return id, nil
+	return id, c.UpsertSiteRange(siteID, id, name, description, cidr, isV4, isV6, weight, metric)
 }
 
-func (c *Client) UpsertSiteRange(siteID, id, name, description, cidr string, isV4, isV6 bool, weight, metric int) error {
+func (c *Client) UpsertSiteRange(siteID, id, name, description, cidr string, isV4, isV6 bool, weight, metric int64) error {
 	payload := siteRangePayload{
 		ID:          id,
 		SiteID:      siteID,
@@ -121,7 +117,7 @@ func (c *Client) UpsertSiteRange(siteID, id, name, description, cidr string, isV
 }
 
 func (c *Client) DeleteSiteRange(siteID, id string) error {
-	req, err := http.NewRequest(http.MethodDelete, c.getHostURL(fmt.Sprintf("/site/%s/rage/%s", siteID, id)), nil)
+	req, err := http.NewRequest(http.MethodDelete, c.getHostURL(fmt.Sprintf("/site/%s/range/%s", siteID, id)), nil)
 	if err != nil {
 		return err
 	}

@@ -2,11 +2,16 @@ package resources
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/chriskuchin/terraform-provider-bowtie/internal/bowtie/client"
+	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -32,14 +37,6 @@ type siteRangeResourceModel struct {
 	LastUpdated types.String `tfsdk:"last_updated"`
 }
 
-func (srm siteRangeResourceModel) getRange() types.String {
-	if !srm.IPV4Range.IsNull() {
-		return srm.IPV4Range
-	}
-
-	return srm.IPV6Range
-}
-
 func NewSiteRangeResource() resource.Resource {
 	return &siteRangeResource{}
 }
@@ -54,19 +51,58 @@ func (sr *siteRangeResource) Schema(ctx context.Context, req resource.SchemaRequ
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:            true,
-				MarkdownDescription: "",
+				MarkdownDescription: "The unique ID from the api for this site range.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"last_updated": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				MarkdownDescription: "Provider metadata for when the last update was performed via terraform for this resource.",
+			},
+			"site_id": schema.StringAttribute{
+				Required:            true,
+				MarkdownDescription: "The Site id that this range should be associated with.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"name": schema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "",
+				MarkdownDescription: "The name of this range.",
+			},
+			"description": schema.StringAttribute{
+				Optional:            true,
+				MarkdownDescription: "The description of what this range is.",
+			},
+			"ipv4_range": schema.StringAttribute{
+				MarkdownDescription: "The IPv4 CIDR range for this site range. **Mutually exlcusive with `ipv6_range`**",
+				Optional:            true,
+			},
+			"ipv6_range": schema.StringAttribute{
+				MarkdownDescription: "The IPv6 CIDR range for this site range. **Mutually exlcusive with `ipv4_range`**",
+				Optional:            true,
+			},
+			"weight": schema.Int64Attribute{
+				MarkdownDescription: "The weight for this range.",
+				Computed:            true,
+				Default:             int64default.StaticInt64(0),
+			},
+			"metric": schema.Int64Attribute{
+				MarkdownDescription: "The metric for this range",
+				Computed:            true,
+				Default:             int64default.StaticInt64(0),
 			},
 		},
+	}
+}
+
+func (sr *siteRangeResource) ConfigValidators(ctx context.Context) []resource.ConfigValidator {
+	return []resource.ConfigValidator{
+		resourcevalidator.ExactlyOneOf(
+			path.MatchRoot("ipv4_range"),
+			path.MatchRoot("ipv6_range"),
+		),
 	}
 }
 
@@ -78,8 +114,8 @@ func (sr *siteRangeResource) Configure(ctx context.Context, req resource.Configu
 	client, ok := req.ProviderData.(*client.Client)
 	if !ok {
 		resp.Diagnostics.AddError(
-			"",
-			"",
+			"Unknown provider data, not of expected type",
+			"Casting the ProviderData to *client.Client failed. Please contact provider maintainers to report this bug",
 		)
 	}
 
@@ -88,18 +124,35 @@ func (sr *siteRangeResource) Configure(ctx context.Context, req resource.Configu
 
 func (sr *siteRangeResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan siteRangeResourceModel
-	diags := req.Plan.Get(ctx, &plan)
-	resp.Diagnostics.Append(diags...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id, err := sr.client.CreateSiteRange(plan.SiteID.ValueString(), plan.Name.ValueString(), plan.Description.ValueString(), plan.getRange().ValueString(), !plan.IPV4Range.IsNull(), !plan.IPV4Range.IsNull(), int(plan.Weight.ValueInt64()), int(plan.Metric.ValueInt64()))
+	var is_ipv4 bool
+	var is_ipv6 bool
+	var cidr string
+	if !plan.IPV4Range.IsNull() {
+		is_ipv4 = true
+		cidr = plan.IPV4Range.ValueString()
+	} else if !plan.IPV6Range.IsNull() {
+		is_ipv6 = true
+		cidr = plan.IPV6Range.ValueString()
+	} else {
+		resp.Diagnostics.AddError(
+			"Failed to correctly configure requests",
+			"Resource was unable to identify the cidr type",
+		)
+		return
+	}
+
+	id, err := sr.client.CreateSiteRange(plan.SiteID.ValueString(), plan.Name.ValueString(), plan.Description.ValueString(), cidr, is_ipv4, is_ipv6, plan.Weight.ValueInt64(), plan.Metric.ValueInt64())
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"",
-			"",
+			"Failed to create the site range",
+			"Unexpected error calling the bowtie api: "+err.Error(),
 		)
+		return
 	}
 
 	plan.ID = types.StringValue(id)
@@ -115,35 +168,88 @@ func (sr *siteRangeResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	// sr.client.Get
 	info, err := sr.client.GetSiteRange(state.SiteID.ValueString(), state.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"",
-			"",
+			"Failed to retrieve site range info from the bowtie server",
+			"Unexpected error reading from the bowtie server error: "+err.Error(),
 		)
+		return
 	}
 
 	state.Name = types.StringValue(info.Name)
 	state.Description = types.StringValue(info.Description)
-	state.Weight = types.Int64Value(int64(info.Weight))
-	state.Metric = types.Int64Value(int64(info.Metric))
+	state.Weight = types.Int64Value(info.Weight)
+	state.Metric = types.Int64Value(info.Metric)
 
 	if info.ISV6 {
 		state.IPV6Range = types.StringValue(info.Range)
 	} else if info.ISV4 {
 		state.IPV4Range = types.StringValue(info.Range)
 	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
 }
 
 func (sr *siteRangeResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var plan siteRangeResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
+	var is_ipv4 bool
+	var is_ipv6 bool
+	var cidr string
+	if !(plan.IPV4Range.IsNull() && plan.IPV4Range.IsUnknown()) {
+		is_ipv4 = true
+		cidr = plan.IPV4Range.ValueString()
+	} else if !(plan.IPV6Range.IsNull() && plan.IPV6Range.IsUnknown()) {
+		is_ipv6 = true
+		cidr = plan.IPV6Range.ValueString()
+	}
+
+	err := sr.client.UpsertSiteRange(plan.SiteID.ValueString(), plan.ID.ValueString(), plan.Name.ValueString(), plan.Description.ValueString(), cidr, is_ipv4, is_ipv6, plan.Weight.ValueInt64(), plan.Metric.ValueInt64())
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Failed updating site range info",
+			"Unexpected error updating site range. error: "+err.Error(),
+		)
+		return
+	}
+
+	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 }
 
 func (sr *siteRangeResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var state siteRangeResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
+	err := sr.client.DeleteSiteRange(state.SiteID.ValueString(), state.ID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Failed deleting site range",
+			"Unexpected error communicating with bowtie during delete site range error: "+err.Error(),
+		)
+	}
 }
 
 func (sr *siteRangeResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	idParts := strings.Split(req.ID, ":")
 
+	if len(idParts) != 2 || idParts[0] == "" || idParts[1] == "" {
+		resp.Diagnostics.AddError(
+			"Unexpected Import Identifier",
+			fmt.Sprintf("Expected import identifier with format: site_id:id. Got: %q", req.ID),
+		)
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("site_id"), idParts[0])...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), idParts[1])...)
 }

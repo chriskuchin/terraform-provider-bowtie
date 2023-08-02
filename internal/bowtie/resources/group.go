@@ -38,7 +38,7 @@ func (g *groupResource) Metadata(ctx context.Context, req resource.MetadataReque
 
 func (g *groupResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "A User group used to assign policies and access to groups of users",
+		MarkdownDescription: "A user group used to assign policies for access to groups of users",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:            true,
@@ -77,8 +77,7 @@ func (g *groupResource) Configure(ctx context.Context, req resource.ConfigureReq
 
 func (g *groupResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan groupResourceModel
-	diags := req.Plan.Get(ctx, &plan)
-	resp.Diagnostics.Append(diags...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -94,8 +93,7 @@ func (g *groupResource) Create(ctx context.Context, req resource.CreateRequest, 
 	plan.ID = types.StringValue(id)
 	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 
-	diags = resp.State.Set(ctx, plan)
-	resp.Diagnostics.Append(diags...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -120,17 +118,12 @@ func (g *groupResource) Read(ctx context.Context, req resource.ReadRequest, resp
 
 	state.Name = types.StringValue(group.Name)
 
-	diags = resp.State.Set(ctx, &state)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
 func (g *groupResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var plan groupResourceModel
-	diags := req.Plan.Get(ctx, &plan)
-	resp.Diagnostics.Append(diags...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -141,22 +134,18 @@ func (g *groupResource) Update(ctx context.Context, req resource.UpdateRequest, 
 			"Error updating group",
 			"Could not update group, unexpected error: "+err.Error(),
 		)
+		return
 	}
 
 	plan.ID = types.StringValue(id)
 	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 
-	diags = resp.State.Set(ctx, plan)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 }
 
 func (g *groupResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var state groupResourceModel
-	diags := req.State.Get(ctx, &state)
-	resp.Diagnostics.Append(diags...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

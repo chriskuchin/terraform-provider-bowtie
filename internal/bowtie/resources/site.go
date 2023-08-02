@@ -37,21 +37,22 @@ func (s *siteResource) Metadata(ctx context.Context, req resource.MetadataReques
 
 func (s *siteResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "",
+		MarkdownDescription: "Represents a bowtie site.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:            true,
-				MarkdownDescription: "",
+				MarkdownDescription: "The unique id for the site as represented in the bowtie api.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"last_updated": schema.StringAttribute{
-				Computed: true,
+				MarkdownDescription: "The last time this object was updated using terraform. _Not part of the api_ just a piece of provider metadata.",
+				Computed:            true,
 			},
 			"name": schema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "",
+				MarkdownDescription: "The name of the site that will be displayed in the control plan ui.",
 			},
 		},
 	}
@@ -65,8 +66,8 @@ func (s *siteResource) Configure(ctx context.Context, req resource.ConfigureRequ
 	client, ok := req.ProviderData.(*client.Client)
 	if !ok {
 		resp.Diagnostics.AddError(
-			"",
-			"",
+			"Incorrect provider data",
+			"The provider data was not appropiate and failed to resolve as *client.Client",
 		)
 	}
 
@@ -75,8 +76,7 @@ func (s *siteResource) Configure(ctx context.Context, req resource.ConfigureRequ
 
 func (s *siteResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan siteResourceModel
-	diags := req.Plan.Get(ctx, &plan)
-	resp.Diagnostics.Append(diags...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -84,26 +84,21 @@ func (s *siteResource) Create(ctx context.Context, req resource.CreateRequest, r
 	id, err := s.client.CreateSite(plan.Name.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"",
-			"",
+			"Failed creating site",
+			"Unexpected error creating the site: "+err.Error(),
 		)
+		return
 	}
 
 	plan.ID = types.StringValue(id)
 	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 
-	diags = resp.State.Set(ctx, plan)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
+	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 }
 
 func (s *siteResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var state siteResourceModel
-	diags := req.State.Get(ctx, &state)
-	resp.Diagnostics.Append(diags...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -111,18 +106,15 @@ func (s *siteResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	site, err := s.client.GetSite(state.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"",
-			"",
+			"Failed retrieving site information from bowtie",
+			"Unexpected error retrieving site info from bowtie server: "+err.Error(),
 		)
+		return
 	}
 
 	state.Name = types.StringValue(site.Name)
 
-	diags = resp.State.Set(ctx, &state)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
 func (s *siteResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -136,19 +128,15 @@ func (s *siteResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	err := s.client.UpsertSite(plan.ID.ValueString(), plan.Name.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"",
-			"",
+			"Failed updating the site",
+			"Unexpected error communicating with the bowtie api: "+err.Error(),
 		)
 		return
 	}
 
 	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 
-	diags = resp.State.Set(ctx, plan)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 }
 
 func (s *siteResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {

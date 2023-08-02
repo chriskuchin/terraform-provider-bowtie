@@ -26,8 +26,8 @@ type RoutableRange struct {
 	ID          string `json:"id"`
 	Name        string `json:"name"`
 	Range       string `json:"range"`
-	Weight      int    `json:"weight"`
-	Metric      int    `json:"metric"`
+	Weight      int64  `json:"weight"`
+	Metric      int64  `json:"metric"`
 	Description string `json:"description"`
 	ISV4        bool   `json:"is_v4,omitempty"`
 	ISV6        bool   `json:"is_v6,omitempty"`
@@ -49,29 +49,29 @@ type DNS struct {
 type Server struct {
 	ID    string `json:"id"`
 	Addr  string `json:"addr"`
-	Order int    `json:"order"`
+	Order int64  `json:"order"`
 }
 
 type DNSExclude struct {
 	ID    string `json:"id"`
 	Name  string `json:"name"`
-	Order int    `json:"order"`
+	Order int64  `json:"order"`
 }
 
 type Controller struct {
-	ID                  string `json:"id"`
-	SiteID              string `json:"site_id"`
-	PublicAddress       string `json:"public_address"`
-	SyncAddress         string `json:"sync_address"`
-	SyncState           string `json:"sync_state"`
-	Status              string `json:"status"`
-	Features            string `json:"features"`
-	WireguardPort       int    `json:"wireguard_port"`
-	PublicKey           string `json:"public_key"`
-	HTTPSEndpoint       string `json:"https_endpoint"`
-	PersistentKeepalive int    `json:"persistent_keepalive"`
-	DeviceID            string `json:"device_id"`
-	IPV6                string `json:"ipv6"`
+	ID                  string   `json:"id"`
+	SiteID              string   `json:"site_id"`
+	PublicAddress       string   `json:"public_address"`
+	SyncAddress         string   `json:"sync_address"`
+	SyncState           string   `json:"sync_state"`
+	Status              string   `json:"status"`
+	Features            []string `json:"features"`
+	WireguardPort       int      `json:"wireguard_port"`
+	PublicKey           string   `json:"public_key"`
+	HTTPSEndpoint       string   `json:"https_endpoint"`
+	PersistentKeepalive int      `json:"persistent_keepalive"`
+	DeviceID            string   `json:"device_id"`
+	IPV6                string   `json:"ipv6"`
 }
 
 func (c *Client) GetOrganization() (*Organization, error) {
