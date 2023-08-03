@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -29,15 +29,13 @@ type dnsResourceModel struct {
 	ID               types.String              `tfsdk:"id"`
 	LastUpdated      types.String              `tfsdk:"last_updated"`
 	Name             types.String              `tfsdk:"name"`
-	Servers          []types.String            `tfsdk:"servers"`
-	ServersDetails   []dnsServersResourceModel `tfsdk:"servers_details"`
+	Servers          []dnsServersResourceModel `tfsdk:"servers"`
 	IncludeOnlySites []types.String            `tfsdk:"include_only_sites"`
 	IsCounted        types.Bool                `tfsdk:"is_counted"`
 	IsLog            types.Bool                `tfsdk:"is_log"`
 	IsDropA          types.Bool                `tfsdk:"is_drop_a"`
 	IsDropAll        types.Bool                `tfsdk:"is_drop_all"`
-	DNS64Exclude     []types.String            `tfsdk:"exclude"`
-	ExcludeDetails   []dnsExcludeResourceModel `tfsdk:"exclude_details"`
+	DNS64Exclude     []dnsExcludeResourceModel `tfsdk:"excludes"`
 }
 
 type dnsServersResourceModel struct {
@@ -79,14 +77,9 @@ func (d *dnsResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 				Required:            true,
 				MarkdownDescription: "The DNS zone name you wish to target",
 			},
-			"servers": schema.ListAttribute{
-				ElementType:         types.StringType,
-				Required:            true,
-				MarkdownDescription: "List of server ip addresses to query for the zone",
-			},
-			"servers_details": schema.ListNestedAttribute{
+			"servers": schema.ListNestedAttribute{
 				MarkdownDescription: "Provider Metadata storing extra API data about the server settings",
-				Computed:            true,
+				Required:            true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"id": schema.StringAttribute{
@@ -98,7 +91,7 @@ func (d *dnsResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 						},
 						"addr": schema.StringAttribute{
 							MarkdownDescription: "The IP address for this dns server",
-							Computed:            true,
+							Required:            true,
 						},
 						"order": schema.Int64Attribute{
 							MarkdownDescription: "The order for this dns server",
@@ -132,14 +125,9 @@ func (d *dnsResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 				Computed:            true,
 				MarkdownDescription: "Should all records be dropped",
 			},
-			"exclude": schema.ListAttribute{
-				ElementType:         types.StringType,
-				Required:            true,
-				MarkdownDescription: "Records that should not be part of this dns settings",
-			},
-			"exclude_details": schema.ListNestedAttribute{
+			"excludes": schema.ListNestedAttribute{
 				MarkdownDescription: "Provider Metadata storing extra API information about the exclude settings",
-				Computed:            true,
+				Required:            true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"id": schema.StringAttribute{
@@ -151,7 +139,7 @@ func (d *dnsResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 						},
 						"name": schema.StringAttribute{
 							MarkdownDescription: "",
-							Computed:            true,
+							Required:            true,
 						},
 						"order": schema.Int64Attribute{
 							MarkdownDescription: "",
@@ -188,10 +176,10 @@ func (d *dnsResource) Create(ctx context.Context, req resource.CreateRequest, re
 	}
 
 	servers := []client.Server{}
-	for order, addr := range plan.Servers {
+	for order, server := range plan.Servers {
 		servers = append(servers, client.Server{
 			ID:    uuid.NewString(),
-			Addr:  addr.ValueString(),
+			Addr:  server.Addr.ValueString(),
 			Order: int64(order),
 		})
 	}
@@ -202,10 +190,10 @@ func (d *dnsResource) Create(ctx context.Context, req resource.CreateRequest, re
 	}
 
 	excludes := []client.DNSExclude{}
-	for order, name := range plan.DNS64Exclude {
+	for order, exclude := range plan.DNS64Exclude {
 		excludes = append(excludes, client.DNSExclude{
 			ID:    uuid.NewString(),
-			Name:  name.ValueString(),
+			Name:  exclude.Name.ValueString(),
 			Order: int64(order),
 		})
 	}
@@ -221,18 +209,18 @@ func (d *dnsResource) Create(ctx context.Context, req resource.CreateRequest, re
 	plan.ID = types.StringValue(id)
 	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 
-	plan.ServersDetails = []dnsServersResourceModel{}
+	plan.Servers = []dnsServersResourceModel{}
 	for _, server := range servers {
-		plan.ServersDetails = append(plan.ServersDetails, dnsServersResourceModel{
+		plan.Servers = append(plan.Servers, dnsServersResourceModel{
 			ID:    types.StringValue(server.ID),
 			Addr:  types.StringValue(server.Addr),
 			Order: types.Int64Value(server.Order),
 		})
 	}
 
-	plan.ExcludeDetails = []dnsExcludeResourceModel{}
+	plan.DNS64Exclude = []dnsExcludeResourceModel{}
 	for _, exclude := range excludes {
-		plan.ExcludeDetails = append(plan.ExcludeDetails, dnsExcludeResourceModel{
+		plan.DNS64Exclude = append(plan.DNS64Exclude, dnsExcludeResourceModel{
 			ID:    types.StringValue(exclude.ID),
 			Name:  types.StringValue(exclude.Name),
 			Order: types.Int64Value(exclude.Order),
@@ -255,18 +243,19 @@ func (d *dnsResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 			"Failed communicating with the bowtie api",
 			"Unexpected error reading DNS settings: "+err.Error(),
 		)
+		return
 	}
 
-	state.Servers = []basetypes.StringValue{}
-	state.ServersDetails = []dnsServersResourceModel{}
-	for _, v := range dns.Servers {
-		state.Servers = append(state.Servers, types.StringValue(v.Addr))
-		state.ServersDetails[v.Order] = dnsServersResourceModel{
-			ID:    types.StringValue(v.ID),
-			Addr:  types.StringValue(v.Addr),
-			Order: types.Int64Value(v.Order),
-		}
-	}
+	tflog.Info(ctx, fmt.Sprintf("!!!!!!!!!! %+v", dns))
+
+	// state.Servers = []dnsServersResourceModel{}
+	// for _, v := range dns.Servers {
+	// 	state.Servers[v.Order] = dnsServersResourceModel{
+	// 		ID:    types.StringValue(v.ID),
+	// 		Addr:  types.StringValue(v.Addr),
+	// 		Order: types.Int64Value(v.Order),
+	// 	}
+	// }
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
 }
@@ -282,9 +271,30 @@ func (d *dnsResource) Update(ctx context.Context, req resource.UpdateRequest, re
 	for _, include := range plan.IncludeOnlySites {
 		includes = append(includes, include.ValueString())
 	}
+	var servers []client.Server = []client.Server{}
+	for _, server := range plan.Servers {
+		id := server.ID.ValueString()
+		if server.ID.IsUnknown() {
+			id = uuid.NewString()
+		}
+		servers = append(servers, client.Server{
+			ID:    id,
+			Addr:  server.Addr.ValueString(),
+			Order: server.Order.ValueInt64(),
+		})
+	}
 
-	servers := mergeServerDetails(plan.Servers, plan.ServersDetails)
-	excludes := mergeExcludeDNSDetails(plan.DNS64Exclude, plan.ExcludeDetails)
+	tflog.Info(ctx, fmt.Sprintf("TESTTEST %+v - %d", servers, len(servers)))
+
+	var excludes []client.DNSExclude = []client.DNSExclude{}
+	for _, exclude := range plan.DNS64Exclude {
+		excludes = append(excludes, client.DNSExclude{
+			ID:    exclude.ID.ValueString(),
+			Name:  exclude.Name.ValueString(),
+			Order: exclude.Order.ValueInt64(),
+		})
+	}
+
 	err := d.client.UpsertDNS(plan.ID.ValueString(), plan.Name.ValueString(), servers, includes, plan.IsCounted.ValueBool(), plan.IsLog.ValueBool(), plan.IsDropA.ValueBool(), plan.IsDropAll.ValueBool(), excludes)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -294,18 +304,18 @@ func (d *dnsResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		return
 	}
 
-	plan.ServersDetails = []dnsServersResourceModel{}
+	plan.Servers = []dnsServersResourceModel{}
 	for _, server := range servers {
-		plan.ServersDetails = append(plan.ServersDetails, dnsServersResourceModel{
+		plan.Servers = append(plan.Servers, dnsServersResourceModel{
 			ID:    types.StringValue(server.ID),
 			Addr:  types.StringValue(server.Addr),
 			Order: types.Int64Value(server.Order),
 		})
 	}
 
-	plan.ExcludeDetails = []dnsExcludeResourceModel{}
+	plan.DNS64Exclude = []dnsExcludeResourceModel{}
 	for _, exclude := range excludes {
-		plan.ExcludeDetails = append(plan.ExcludeDetails, dnsExcludeResourceModel{
+		plan.DNS64Exclude = append(plan.DNS64Exclude, dnsExcludeResourceModel{
 			ID:    types.StringValue(exclude.ID),
 			Name:  types.StringValue(exclude.Name),
 			Order: types.Int64Value(exclude.Order),

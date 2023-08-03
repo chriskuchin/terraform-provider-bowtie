@@ -25,9 +25,9 @@ resource "bowtie_dns" "example" {
 
 ### Required
 
-- `exclude` (List of String) Records that should not be part of this dns settings
+- `excludes` (Attributes List) Provider Metadata storing extra API information about the exclude settings (see [below for nested schema](#nestedatt--excludes))
 - `name` (String) The DNS zone name you wish to target
-- `servers` (List of String) List of server ip addresses to query for the zone
+- `servers` (Attributes List) Provider Metadata storing extra API data about the server settings (see [below for nested schema](#nestedatt--servers))
 
 ### Optional
 
@@ -35,31 +35,35 @@ resource "bowtie_dns" "example" {
 
 ### Read-Only
 
-- `exclude_details` (Attributes List) Provider Metadata storing extra API information about the exclude settings (see [below for nested schema](#nestedatt--exclude_details))
 - `id` (String) The ID of the dns settings
 - `is_counted` (Boolean) Is Counted var
 - `is_drop_a` (Boolean) Whether to drop the A record or not
 - `is_drop_all` (Boolean) Should all records be dropped
 - `is_log` (Boolean) Is Log Var
 - `last_updated` (String) Metadata about the last time a write api was called by this provider for this resource
-- `servers_details` (Attributes List) Provider Metadata storing extra API data about the server settings (see [below for nested schema](#nestedatt--servers_details))
 
-<a id="nestedatt--exclude_details"></a>
-### Nested Schema for `exclude_details`
+<a id="nestedatt--excludes"></a>
+### Nested Schema for `excludes`
+
+Required:
+
+- `name` (String)
 
 Read-Only:
 
 - `id` (String)
-- `name` (String)
 - `order` (Number)
 
 
-<a id="nestedatt--servers_details"></a>
-### Nested Schema for `servers_details`
+<a id="nestedatt--servers"></a>
+### Nested Schema for `servers`
+
+Required:
+
+- `addr` (String) The IP address for this dns server
 
 Read-Only:
 
-- `addr` (String) The IP address for this dns server
 - `id` (String) The bowtie ID for this dns server
 - `order` (Number) The order for this dns server
 
