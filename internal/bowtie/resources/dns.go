@@ -66,42 +66,42 @@ func (d *dnsResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:            true,
-				MarkdownDescription: "",
+				MarkdownDescription: "The ID of the dns settings",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"last_updated": schema.StringAttribute{
 				Computed:            true,
-				MarkdownDescription: "",
+				MarkdownDescription: "Metadata about the last time a write api was called by this provider for this resource",
 			},
 			"name": schema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "",
+				MarkdownDescription: "The DNS zone name you wish to target",
 			},
 			"servers": schema.ListAttribute{
 				ElementType:         types.StringType,
 				Required:            true,
-				MarkdownDescription: "",
+				MarkdownDescription: "List of server ip addresses to query for the zone",
 			},
 			"servers_details": schema.ListNestedAttribute{
-				MarkdownDescription: "",
+				MarkdownDescription: "Provider Metadata storing extra API data about the server settings",
 				Computed:            true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"id": schema.StringAttribute{
-							MarkdownDescription: "",
+							MarkdownDescription: "The bowtie ID for this dns server",
 							Computed:            true,
 							PlanModifiers: []planmodifier.String{
 								stringplanmodifier.UseStateForUnknown(),
 							},
 						},
 						"addr": schema.StringAttribute{
-							MarkdownDescription: "",
+							MarkdownDescription: "The IP address for this dns server",
 							Computed:            true,
 						},
 						"order": schema.Int64Attribute{
-							MarkdownDescription: "",
+							MarkdownDescription: "The order for this dns server",
 							Computed:            true,
 						},
 					},
@@ -109,35 +109,35 @@ func (d *dnsResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 			},
 			"include_only_sites": schema.ListAttribute{
 				ElementType:         types.StringType,
-				MarkdownDescription: "",
+				MarkdownDescription: "The sites you only want this dns to be responsible for",
 			},
 			"is_counted": schema.BoolAttribute{
 				Default:             booldefault.StaticBool(true),
 				Computed:            true,
-				MarkdownDescription: "",
+				MarkdownDescription: "Is Counted var",
 			},
 			"is_log": schema.BoolAttribute{
 				Default:             booldefault.StaticBool(false),
 				Computed:            true,
-				MarkdownDescription: "",
+				MarkdownDescription: "Is Log Var",
 			},
 			"is_drop_a": schema.BoolAttribute{
 				Default:             booldefault.StaticBool(true),
 				Computed:            true,
-				MarkdownDescription: "",
+				MarkdownDescription: "Whether to drop the A record or not",
 			},
 			"is_drop_all": schema.BoolAttribute{
 				Default:             booldefault.StaticBool(false),
 				Computed:            true,
-				MarkdownDescription: "",
+				MarkdownDescription: "Should all records be dropped",
 			},
 			"exclude": schema.ListAttribute{
 				ElementType:         types.StringType,
 				Required:            true,
-				MarkdownDescription: "",
+				MarkdownDescription: "Records that should not be part of this dns settings",
 			},
 			"exclude_details": schema.ListNestedAttribute{
-				MarkdownDescription: "",
+				MarkdownDescription: "Provider Metadata storing extra API information about the exclude settings",
 				Computed:            true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
@@ -148,8 +148,14 @@ func (d *dnsResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 								stringplanmodifier.UseStateForUnknown(),
 							},
 						},
-						"name":  schema.StringAttribute{},
-						"order": schema.Int64Attribute{},
+						"name": schema.StringAttribute{
+							MarkdownDescription: "",
+							Computed:            true,
+						},
+						"order": schema.Int64Attribute{
+							MarkdownDescription: "",
+							Computed:            true,
+						},
 					},
 				},
 			},
@@ -271,8 +277,42 @@ func (d *dnsResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		return
 	}
 
-	// d.client.UpsertDNS(plan.ID.ValueString(), plan.Name.ValueString(), )
+	var includes []string = []string{}
+	for _, include := range plan.IncludeOnlySites {
+		includes = append(includes, include.ValueString())
+	}
 
+	servers := mergeServerDetails(plan.Servers, plan.ServersDetails)
+	excludes := mergeExcludeDNSDetails(plan.DNS64Exclude, plan.ExcludeDetails)
+	err := d.client.UpsertDNS(plan.ID.ValueString(), plan.Name.ValueString(), servers, includes, plan.IsCounted.ValueBool(), plan.IsLog.ValueBool(), plan.IsDropA.ValueBool(), plan.IsDropAll.ValueBool(), excludes)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Failed updating the dns settings",
+			"Unexpected Error updating the dns: "+err.Error(),
+		)
+		return
+	}
+
+	plan.ServersDetails = []dnsServersResourceModel{}
+	for _, server := range servers {
+		plan.ServersDetails = append(plan.ServersDetails, dnsServersResourceModel{
+			ID:    types.StringValue(server.ID),
+			Addr:  types.StringValue(server.Addr),
+			Order: types.Int64Value(server.Order),
+		})
+	}
+
+	plan.ExcludeDetails = []dnsExcludeResourceModel{}
+	for _, exclude := range excludes {
+		plan.ExcludeDetails = append(plan.ExcludeDetails, dnsExcludeResourceModel{
+			ID:    types.StringValue(exclude.ID),
+			Name:  types.StringValue(exclude.Name),
+			Order: types.Int64Value(exclude.Order),
+		})
+	}
+
+	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
+	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 }
 
 func (d *dnsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -293,4 +333,37 @@ func (d *dnsResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 
 func (d *dnsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+}
+
+func mergeServerDetails(serverList []types.String, serverDetails []dnsServersResourceModel) []client.Server {
+	var result []client.Server = []client.Server{}
+	for index, addr := range serverList {
+		id := uuid.NewString()
+		if len(serverDetails) >= index+1 {
+			id = serverDetails[index].ID.ValueString()
+		}
+		result = append(result, client.Server{
+			ID:    id,
+			Addr:  addr.ValueString(),
+			Order: int64(index),
+		})
+	}
+	return result
+}
+
+func mergeExcludeDNSDetails(excludeList []types.String, excludeDetails []dnsExcludeResourceModel) []client.DNSExclude {
+	var result []client.DNSExclude = []client.DNSExclude{}
+
+	for index, name := range excludeList {
+		id := uuid.NewString()
+		if len(excludeDetails) >= index+1 {
+			id = excludeDetails[index].ID.ValueString()
+		}
+		result = append(result, client.DNSExclude{
+			ID:    id,
+			Name:  name.ValueString(),
+			Order: int64(index),
+		})
+	}
+	return result
 }
