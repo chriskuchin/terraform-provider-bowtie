@@ -3,12 +3,12 @@
 page_title: "bowtie_group Resource - terraform-provider-bowtie"
 subcategory: ""
 description: |-
-  A User group used to assign policies and access to groups of users
+  A user group used to assign policies for access to groups of users
 ---
 
 # bowtie_group (Resource)
 
-A User group used to assign policies and access to groups of users
+A user group used to assign policies for access to groups of users
 
 ## Example Usage
 

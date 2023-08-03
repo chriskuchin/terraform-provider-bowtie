@@ -3,12 +3,12 @@
 page_title: "bowtie_site Resource - terraform-provider-bowtie"
 subcategory: ""
 description: |-
-  
+  Represents a bowtie site.
 ---
 
 # bowtie_site (Resource)
 
-
+Represents a bowtie site.
 
 ## Example Usage
 
@@ -23,12 +23,12 @@ resource "bowtie_site" "corp" {
 
 ### Required
 
-- `name` (String)
+- `name` (String) The name of the site that will be displayed in the control plan ui.
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
-- `last_updated` (String)
+- `id` (String) The unique id for the site as represented in the bowtie api.
+- `last_updated` (String) The last time this object was updated using terraform. _Not part of the api_ just a piece of provider metadata.
 
 ## Import
 

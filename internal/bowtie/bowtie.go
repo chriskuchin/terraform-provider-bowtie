@@ -150,8 +150,8 @@ func (b *BowtieProvider) Resources(_ context.Context) []func() resource.Resource
 	return []func() resource.Resource{
 		resources.NewDNSResource,
 		resources.NewGroupResource,
-		resources.NewSiteResource,
 		resources.NewSiteRangeResource,
+		resources.NewSiteResource,
 	}
 }
 

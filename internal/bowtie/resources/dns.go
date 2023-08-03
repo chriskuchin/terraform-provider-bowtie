@@ -109,6 +109,7 @@ func (d *dnsResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 			},
 			"include_only_sites": schema.ListAttribute{
 				ElementType:         types.StringType,
+				Optional:            true,
 				MarkdownDescription: "The sites you only want this dns to be responsible for",
 			},
 			"is_counted": schema.BoolAttribute{
