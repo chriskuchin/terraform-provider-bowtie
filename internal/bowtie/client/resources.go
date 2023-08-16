@@ -153,3 +153,13 @@ func (c *Client) DeletePolicy(id string) error {
 	_, err = c.doRequest(req)
 	return err
 }
+
+func (c *Client) DeleteResource(id string) error {
+	req, err := http.NewRequest(http.MethodDelete, c.getHostURL(fmt.Sprintf("/policy/resource/%s", id)), nil)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.doRequest(req)
+	return err
+}

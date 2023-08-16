@@ -281,7 +281,19 @@ func (r *resourceResource) Update(ctx context.Context, req resource.UpdateReques
 }
 
 func (r *resourceResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var plan resourceResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
+	err := r.client.DeleteResource(plan.ID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"deleting resource failed",
+			"Unexpected error calling bowtie api to delete resource: "+plan.ID.ValueString()+" error: "+err.Error(),
+		)
+	}
 }
 
 func (r *resourceResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
