@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"golang.org/x/vuln/client"
 )
 
 func (c *Client) ListSites() ([]Site, error) {
