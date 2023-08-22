@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
+	"golang.org/x/vuln/client"
 )
 
 func (c *Client) ListSites() ([]Site, error) {
@@ -82,6 +83,16 @@ type siteRangePayload struct {
 	IsV6        bool   `json:"is_v6"`
 	Weight      int64  `json:"weight"`
 	Metric      int64  `json:"metric"`
+}
+
+func (c *Client) DeleteSite(siteID string) error {
+	req, err := http.NewRequest(http.MethodDelete, c.getHostURL(fmt.Sprintf("/site/%s", siteID)), nil)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.doRequest(req)
+	return err
 }
 
 func (c *Client) CreateSiteRange(siteID, name, description, cidr string, isV4, isV6 bool, weight, metric int64) (string, error) {

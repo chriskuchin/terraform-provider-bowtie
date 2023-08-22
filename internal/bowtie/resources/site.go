@@ -147,7 +147,13 @@ func (s *siteResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 		return
 	}
 
-	// TODO Implement Delete on API support
+	err := s.client.DeleteSite(state.ID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Failed deleting the site",
+			"Unexpected failure deleting the site: "+state.ID.ValueString()+" error: "+err.Error(),
+		)
+	}
 }
 
 func (s *siteResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
