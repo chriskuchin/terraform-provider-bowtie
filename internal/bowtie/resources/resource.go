@@ -216,7 +216,7 @@ func (r *resourceResource) Read(ctx context.Context, req resource.ReadRequest, r
 		return
 	}
 
-	if len(resource.Ports.Collection) > 0 {
+	if len(resource.Ports.Collection.Ports) > 0 {
 		state.Ports.Range = types.ListNull(types.Int64Type)
 		collection, diags := types.ListValueFrom(ctx, types.Int64Type, resource.Ports.Collection)
 		resp.Diagnostics.Append(diags...)

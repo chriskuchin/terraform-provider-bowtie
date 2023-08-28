@@ -49,8 +49,12 @@ type BowtieResourceLocation struct {
 }
 
 type BowtieResourcePorts struct {
-	Range      []int64 `json:"range,omitempty"`
-	Collection []int64 `json:"collection,omitempty"`
+	Range      []int64                      `json:"range,omitempty"`
+	Collection BowtieResourcePortCollection `json:"collection,omitempty"`
+}
+
+type BowtieResourcePortCollection struct {
+	Ports []int64 `json:"ports,omitempty"`
 }
 
 func (c *Client) CreateResource(name, protocol string, ip, cidr, dns string, portRange, portCollection []int64) (string, BowtieResource, error) {
@@ -70,8 +74,10 @@ func (c *Client) UpsertResource(id, name, protocol, ip, cidr, dns string, portRa
 			DNS:  dns,
 		},
 		Ports: BowtieResourcePorts{
-			Range:      portRange,
-			Collection: portCollection,
+			Range: portRange,
+			Collection: BowtieResourcePortCollection{
+				Ports: portCollection,
+			},
 		},
 	}
 
