@@ -163,3 +163,36 @@ func (c *Client) DeleteResource(id string) error {
 	_, err = c.doRequest(req)
 	return err
 }
+
+func (c *Client) CreateResourceGroup(name string, resources, resource_groups []string) (string, error) {
+	id := uuid.NewString()
+	return id, c.UpsertResourceGroup(id, name, resources, resource_groups)
+}
+
+func (c *Client) UpsertResourceGroup(id, name string, resources, resource_groups []string) error {
+	payload := BowtieResourceGroup{
+		ID:        id,
+		Name:      name,
+		Resources: resources,
+		Inherited: resource_groups,
+	}
+
+	body, err := json.Marshal(payload)
+	req, err := http.NewRequest(http.MethodPost, c.getHostURL("/policy/upsert_resource_group"), bytes.NewBuffer(body))
+	if err != nil {
+		return err
+	}
+
+	_, err = c.doRequest(req)
+	return err
+}
+
+func (c *Client) DeleteResourceGroup(id string) error {
+	req, err := http.NewRequest(http.MethodDelete, c.getHostURL(fmt.Sprintf("/policy/resource_group/%s", id)), nil)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.doRequest(req)
+	return err
+}
