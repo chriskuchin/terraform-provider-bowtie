@@ -8,7 +8,6 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 type PoliciesEndpointResponse struct {
