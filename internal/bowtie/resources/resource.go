@@ -23,11 +23,11 @@ type resourceResource struct {
 }
 
 type resourceResourceModel struct {
-	ID       types.String          `tfsdk:"id"`
-	Name     types.String          `tfsdk:"name"`
-	Protocol types.String          `tfsdk:"protocol"`
-	Location resourceLocationModel `tfsdk:"location"`
-	Ports    resourcePortsModel    `tfsdk:"ports"`
+	ID       types.String           `tfsdk:"id"`
+	Name     types.String           `tfsdk:"name"`
+	Protocol types.String           `tfsdk:"protocol"`
+	Location *resourceLocationModel `tfsdk:"location"`
+	Ports    *resourcePortsModel    `tfsdk:"ports"`
 }
 
 type resourceLocationModel struct {
@@ -194,6 +194,7 @@ func (r *resourceResource) Read(ctx context.Context, req resource.ReadRequest, r
 
 	state.Name = types.StringValue(resource.Name)
 	state.Protocol = types.StringValue(resource.Protocol)
+	state.Location = &resourceLocationModel{}
 
 	if resource.Location.CIDR != "" {
 		state.Location.CIDR = types.StringValue(resource.Location.CIDR)
@@ -216,6 +217,7 @@ func (r *resourceResource) Read(ctx context.Context, req resource.ReadRequest, r
 		return
 	}
 
+	state.Ports = &resourcePortsModel{}
 	if resource.Ports.Collection != nil {
 		state.Ports.Range = types.ListNull(types.Int64Type)
 		collection, diags := types.ListValueFrom(ctx, types.Int64Type, resource.Ports.Collection.Ports)
@@ -241,7 +243,7 @@ func (r *resourceResource) Read(ctx context.Context, req resource.ReadRequest, r
 		return
 	}
 
-	resp.Diagnostics.Append(req.State.Set(ctx, state)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
 }
 
 func (r *resourceResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {

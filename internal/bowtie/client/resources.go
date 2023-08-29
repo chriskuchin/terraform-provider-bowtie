@@ -122,7 +122,8 @@ func (c *Client) GetPoliciesAndResources() (*PoliciesEndpointResponse, error) {
 	}
 
 	var policy *PoliciesEndpointResponse = &PoliciesEndpointResponse{}
-	return policy, json.Unmarshal(body, policy)
+	err = json.Unmarshal(body, &policy)
+	return policy, err
 }
 
 func (c *Client) GetPolicy(id string) (BowtiePolicy, error) {
