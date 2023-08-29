@@ -162,7 +162,7 @@ func (r *resourceResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
-	id, _, err := r.client.CreateResource(plan.Name.ValueString(), plan.Protocol.ValueString(), plan.Location.IP.ValueString(), plan.Location.CIDR.ValueString(), plan.Location.DNS.ValueString(), portsRange, portsCollection)
+	id, _, err := r.client.CreateResource(ctx, plan.Name.ValueString(), plan.Protocol.ValueString(), plan.Location.IP.ValueString(), plan.Location.CIDR.ValueString(), plan.Location.DNS.ValueString(), portsRange, portsCollection)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unexpected error from bowtie API",
@@ -216,7 +216,7 @@ func (r *resourceResource) Read(ctx context.Context, req resource.ReadRequest, r
 		return
 	}
 
-	if len(resource.Ports.Collection.Ports) > 0 {
+	if resource.Ports.Collection != nil {
 		state.Ports.Range = types.ListNull(types.Int64Type)
 		collection, diags := types.ListValueFrom(ctx, types.Int64Type, resource.Ports.Collection.Ports)
 		resp.Diagnostics.Append(diags...)
@@ -268,7 +268,7 @@ func (r *resourceResource) Update(ctx context.Context, req resource.UpdateReques
 		return
 	}
 
-	_, err := r.client.UpsertResource(plan.ID.ValueString(), plan.Name.ValueString(), plan.Protocol.ValueString(), plan.Location.IP.ValueString(), plan.Location.CIDR.ValueString(), plan.Location.DNS.ValueString(), portsRange, portsCollection)
+	_, err := r.client.UpsertResource(ctx, plan.ID.ValueString(), plan.Name.ValueString(), plan.Protocol.ValueString(), plan.Location.IP.ValueString(), plan.Location.CIDR.ValueString(), plan.Location.DNS.ValueString(), portsRange, portsCollection)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed updating resource",

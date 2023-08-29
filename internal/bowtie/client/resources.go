@@ -2,11 +2,13 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 type PoliciesEndpointResponse struct {
@@ -49,21 +51,21 @@ type BowtieResourceLocation struct {
 }
 
 type BowtieResourcePorts struct {
-	Range      []int64                      `json:"range,omitempty"`
-	Collection BowtieResourcePortCollection `json:"collection,omitempty"`
+	Range      []int64                       `json:"range,omitempty"`
+	Collection *BowtieResourcePortCollection `json:"collection,omitempty"`
 }
 
 type BowtieResourcePortCollection struct {
 	Ports []int64 `json:"ports,omitempty"`
 }
 
-func (c *Client) CreateResource(name, protocol string, ip, cidr, dns string, portRange, portCollection []int64) (string, BowtieResource, error) {
+func (c *Client) CreateResource(ctx context.Context, name, protocol string, ip, cidr, dns string, portRange, portCollection []int64) (string, BowtieResource, error) {
 	id := uuid.NewString()
-	resource, err := c.UpsertResource(id, name, protocol, ip, cidr, dns, portRange, portCollection)
+	resource, err := c.UpsertResource(ctx, id, name, protocol, ip, cidr, dns, portRange, portCollection)
 	return id, resource, err
 }
 
-func (c *Client) UpsertResource(id, name, protocol, ip, cidr, dns string, portRange, portCollection []int64) (BowtieResource, error) {
+func (c *Client) UpsertResource(ctx context.Context, id, name, protocol, ip, cidr, dns string, portRange, portCollection []int64) (BowtieResource, error) {
 	payload := BowtieResource{
 		ID:       id,
 		Name:     name,
@@ -73,15 +75,22 @@ func (c *Client) UpsertResource(id, name, protocol, ip, cidr, dns string, portRa
 			CIDR: cidr,
 			DNS:  dns,
 		},
-		Ports: BowtieResourcePorts{
-			Range: portRange,
-			Collection: BowtieResourcePortCollection{
-				Ports: portCollection,
-			},
-		},
+		Ports: BowtieResourcePorts{},
+	}
+
+	if len(portRange) > 0 {
+		payload.Ports.Range = portRange
+	} else {
+		payload.Ports.Collection = &BowtieResourcePortCollection{
+			Ports: portCollection,
+		}
 	}
 
 	body, err := json.Marshal(payload)
+	if err != nil {
+		return BowtieResource{}, err
+	}
+
 	if err != nil {
 		return BowtieResource{}, err
 	}
