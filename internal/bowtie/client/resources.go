@@ -179,12 +179,12 @@ func (c *Client) DeleteResource(id string) error {
 	return err
 }
 
-func (c *Client) CreateResourceGroup(name string, resources, resource_groups []string) (string, error) {
+func (c *Client) CreateResourceGroup(ctx context.Context, name string, resources, resource_groups []string) (string, error) {
 	id := uuid.NewString()
-	return id, c.UpsertResourceGroup(id, name, resources, resource_groups)
+	return id, c.UpsertResourceGroup(ctx, id, name, resources, resource_groups)
 }
 
-func (c *Client) UpsertResourceGroup(id, name string, resources, resource_groups []string) error {
+func (c *Client) UpsertResourceGroup(ctx context.Context, id, name string, resources, resource_groups []string) error {
 	payload := BowtieResourceGroup{
 		ID:        id,
 		Name:      name,
@@ -193,6 +193,10 @@ func (c *Client) UpsertResourceGroup(id, name string, resources, resource_groups
 	}
 
 	body, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+
 	req, err := http.NewRequest(http.MethodPost, c.getHostURL("/policy/upsert_resource_group"), bytes.NewBuffer(body))
 	if err != nil {
 		return err

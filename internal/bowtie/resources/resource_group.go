@@ -48,7 +48,7 @@ func (rg *resourceGroupResource) Schema(ctx context.Context, req resource.Schema
 			"inherited": schema.ListAttribute{
 				MarkdownDescription: "The list of resource groups to include in this resource group",
 				ElementType:         types.StringType,
-				Optional:            true,
+				Required:            true,
 			},
 			"resources": schema.ListAttribute{
 				MarkdownDescription: "The resources that should directly be included in this resource group",
@@ -94,7 +94,7 @@ func (rg *resourceGroupResource) Create(ctx context.Context, req resource.Create
 		return
 	}
 
-	id, err := rg.client.CreateResourceGroup(plan.Name.ValueString(), resources, resource_groups)
+	id, err := rg.client.CreateResourceGroup(ctx, plan.Name.ValueString(), resources, resource_groups)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to create the resource group",
@@ -110,7 +110,7 @@ func (rg *resourceGroupResource) Create(ctx context.Context, req resource.Create
 
 func (rg *resourceGroupResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var state resourceGroupResourceModel
-	resp.Diagnostics.Append(req.State.Get(ctx, state)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -118,8 +118,8 @@ func (rg *resourceGroupResource) Read(ctx context.Context, req resource.ReadRequ
 	resourceGroup, err := rg.client.GetResourceGroup(state.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"",
-			"",
+			"Failed to read the resource group",
+			"Unexpected error reading the resource group: "+state.ID.ValueString()+" err: "+err.Error(),
 		)
 		return
 	}
@@ -162,7 +162,7 @@ func (rg *resourceGroupResource) Update(ctx context.Context, req resource.Update
 		return
 	}
 
-	err := rg.client.UpsertResourceGroup(plan.ID.ValueString(), plan.Name.ValueString(), resources, resource_groups)
+	err := rg.client.UpsertResourceGroup(ctx, plan.ID.ValueString(), plan.Name.ValueString(), resources, resource_groups)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed updating the resource group",
