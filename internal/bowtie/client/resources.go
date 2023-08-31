@@ -141,8 +141,18 @@ func (c *Client) GetPolicy(id string) (BowtiePolicy, error) {
 }
 
 func (c *Client) GetResourceGroup(id string) (BowtieResourceGroup, error) {
+	rp, err := c.GetPoliciesAndResources()
+	if err != nil {
+		return BowtieResourceGroup{}, nil
+	}
 
-	return BowtieResourceGroup{}, nil
+	for _, val := range rp.ResourceGroups {
+		if val.ID == id {
+			return val, nil
+		}
+	}
+
+	return BowtieResourceGroup{}, fmt.Errorf("resource_group not found")
 }
 
 func (c *Client) GetResource(id string) (BowtieResource, error) {
