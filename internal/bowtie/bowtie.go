@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/chriskuchin/terraform-provider-bowtie/internal/bowtie/client"
+	"github.com/chriskuchin/terraform-provider-bowtie/internal/bowtie/data_sources"
 	"github.com/chriskuchin/terraform-provider-bowtie/internal/bowtie/resources"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -158,5 +159,7 @@ func (b *BowtieProvider) Resources(_ context.Context) []func() resource.Resource
 }
 
 func (b *BowtieProvider) DataSources(_ context.Context) []func() datasource.DataSource {
-	return nil
+	return []func() datasource.DataSource{
+		data_sources.NewUserDataSource,
+	}
 }
