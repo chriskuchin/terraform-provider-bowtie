@@ -1,6 +1,7 @@
 package client
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -22,6 +23,10 @@ type ModifyUserGroupPayload struct {
 
 type ModifyUserGroupResponse struct {
 	Updated map[string]bool `json:"updated"`
+}
+
+type SetUserGroupMembershipPayload struct {
+	Users []string `json:"users"`
 }
 
 func (c *Client) GetGroup(id string) (*Group, error) {
@@ -136,4 +141,33 @@ func (c *Client) modifyUserGroup(action, groupID string, userIDs []string) (*Mod
 	err = json.Unmarshal(body, response)
 
 	return response, err
+}
+
+func (c *Client) DeleteGroup(groupID string) error {
+	req, err := http.NewRequest(http.MethodDelete, c.getHostURL(fmt.Sprintf("/group/%s", groupID)), nil)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.doRequest(req)
+	return err
+}
+
+func (c *Client) SetGroupMembership(groupID string, users []string) error {
+	payload := SetUserGroupMembershipPayload{
+		Users: users,
+	}
+
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, c.getHostURL(fmt.Sprintf("/group/%s/set_membership", groupID)), bytes.NewBuffer(body))
+	if err != nil {
+		return err
+	}
+
+	_, err = c.doRequest(req)
+	return err
 }
