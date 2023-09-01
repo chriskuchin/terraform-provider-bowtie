@@ -150,7 +150,13 @@ func (g *groupResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 		return
 	}
 
-	// TODO Delete from remote when endpoint is implemented
+	err := g.client.DeleteGroup(state.ID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Failed to delete the group",
+			"Unexpected error deleting the group: "+state.ID.ValueString()+" err: "+err.Error(),
+		)
+	}
 }
 
 func (g *groupResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {

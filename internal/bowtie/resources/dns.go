@@ -246,7 +246,7 @@ func (d *dnsResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 		return
 	}
 
-	tflog.Info(ctx, fmt.Sprintf("!!!!!!!!!! %+v", dns))
+	tflog.Debug(ctx, fmt.Sprintf("!!!!!!!!!! %+v", dns))
 
 	// state.Servers = []dnsServersResourceModel{}
 	// for _, v := range dns.Servers {
@@ -283,8 +283,6 @@ func (d *dnsResource) Update(ctx context.Context, req resource.UpdateRequest, re
 			Order: server.Order.ValueInt64(),
 		})
 	}
-
-	tflog.Info(ctx, fmt.Sprintf("TESTTEST %+v - %d", servers, len(servers)))
 
 	var excludes []client.DNSExclude = []client.DNSExclude{}
 	for _, exclude := range plan.DNS64Exclude {
