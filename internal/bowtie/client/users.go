@@ -1,6 +1,7 @@
 package client
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -52,4 +53,34 @@ func (c *Client) GetUserByEmail(ctx context.Context, email string) (BowtieUser, 
 	}
 
 	return BowtieUser{}, fmt.Errorf("user not found")
+}
+
+func (c *Client) DeleteUser(id string) error {
+	req, err := http.NewRequest(http.MethodDelete, c.getHostURL(fmt.Sprintf("/user/%s", id)), nil)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.doRequest(req)
+	return err
+}
+
+func (c *Client) DisableUser(id string) error {
+	payload := BowtieUser{
+		Status: "Disabled",
+		ID:     id,
+	}
+
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, c.getHostURL("/user/upsert"), bytes.NewBuffer(body))
+	if err != nil {
+		return err
+	}
+
+	_, err = c.doRequest(req)
+	return err
 }
