@@ -17,10 +17,10 @@ type PoliciesEndpointResponse struct {
 }
 
 type BowtiePolicy struct {
-	ID     string             `json:"id"`
-	Source BowtiePolicySource `json:"source"`
-	Dest   string             `json:"dest"`
-	Action string             `json:"action"`
+	ID string `json:"id"`
+	// Source BowtiePolicySource `json:"source"`
+	// Dest   string             `json:"dest"`
+	// Action string             `json:"action"`
 }
 
 type BowtiePolicySource struct {

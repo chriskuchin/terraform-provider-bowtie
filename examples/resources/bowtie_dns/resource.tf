@@ -3,7 +3,7 @@ resource "bowtie_dns" "example" {
   servers = [{
     addr = "192.0.2.1"
   }]
-  exclude = [{
+  excludes = [{
     name = "wrong.example.com"
   }]
 }
