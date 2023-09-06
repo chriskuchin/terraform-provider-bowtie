@@ -8,6 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
@@ -42,7 +44,9 @@ func (rg *resourceGroupResource) Schema(ctx context.Context, req resource.Schema
 			"id": schema.StringAttribute{
 				MarkdownDescription: "The id for the resource group in the api",
 				Computed:            true,
-			},
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				}},
 			"name": schema.StringAttribute{
 				MarkdownDescription: "The human readable name/description of the resource group",
 				Required:            true,
@@ -111,11 +115,14 @@ func (rg *resourceGroupResource) Create(ctx context.Context, req resource.Create
 }
 
 func (rg *resourceGroupResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	tflog.Info(ctx, "START HERE PLEASE")
 	var state resourceGroupResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	tflog.Info(ctx, fmt.Sprintf("!!!!!!!!! %+v", state))
 
 	resourceGroup, err := rg.client.GetResourceGroup(state.ID.ValueString())
 	if err != nil {
@@ -126,7 +133,7 @@ func (rg *resourceGroupResource) Read(ctx context.Context, req resource.ReadRequ
 		return
 	}
 
-	tflog.Info(ctx, fmt.Sprintf("%+v", resourceGroup))
+	tflog.Info(ctx, fmt.Sprintf("########### %+v - id: %s", resourceGroup, state.ID.ValueString()))
 
 	state.Name = types.StringValue(resourceGroup.Name)
 
@@ -143,8 +150,11 @@ func (rg *resourceGroupResource) Read(ctx context.Context, req resource.ReadRequ
 		return
 	}
 	state.Resources = resources
+	state.ID = types.StringValue(resourceGroup.ID)
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
+	tflog.Info(ctx, fmt.Sprintf("%+v", state))
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
 func (rg *resourceGroupResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {

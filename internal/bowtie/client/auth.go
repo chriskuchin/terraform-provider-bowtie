@@ -23,21 +23,6 @@ type User struct {
 	Role              string `json:"role"`
 }
 
-type Device struct {
-	ID             string `json:"id"`
-	Name           string `json:"name"`
-	IPV6           string `json:"ipv6"`
-	PublicKey      string `json:"public_key"`
-	Serial         string `json:"serial"`
-	State          string `json:"state"`
-	ControllerID   string `json:"controller_id"`
-	OwnedByOrg     string `json:"owned_by_org"`
-	AssignedToUser string `json:"assigned_to_user"`
-	DeviceType     string `json:"device_type"`
-	DeviceOS       string `json:"device_os"`
-	LastSeen       string `json:"last_seen"`
-}
-
 func (c *Client) Login() error {
 	payload, err := json.Marshal(c.auth)
 	if err != nil {
