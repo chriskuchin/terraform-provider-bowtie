@@ -43,6 +43,7 @@ type DNS struct {
 	IsLog            bool                  `json:"is_log"`
 	IsDropA          bool                  `json:"is_drop_a"`
 	IsDropAll        bool                  `json:"is_drop_all"`
+	IsSearchDomain   bool                  `json:"is_search_domain"`
 	DNS64Exclude     map[string]DNSExclude `json:"dns64_exclude"`
 }
 

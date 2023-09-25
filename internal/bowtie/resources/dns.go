@@ -35,6 +35,7 @@ type dnsResourceModel struct {
 	IsLog            types.Bool                `tfsdk:"is_log"`
 	IsDropA          types.Bool                `tfsdk:"is_drop_a"`
 	IsDropAll        types.Bool                `tfsdk:"is_drop_all"`
+	IsSearchDomain   types.Bool                `tfsdk:"is_search_domain"`
 	DNS64Exclude     []dnsExcludeResourceModel `tfsdk:"excludes"`
 }
 
@@ -124,6 +125,11 @@ func (d *dnsResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 				Default:             booldefault.StaticBool(false),
 				Computed:            true,
 				MarkdownDescription: "Should all records be dropped",
+			},
+			"is_search_domain": schema.BoolAttribute{
+				Default:             booldefault.StaticBool(false),
+				Computed:            true,
+				MarkdownDescription: "Should domain be configured as a Search Domain on the client",
 			},
 			"excludes": schema.ListNestedAttribute{
 				MarkdownDescription: "Provider Metadata storing extra API information about the exclude settings",
