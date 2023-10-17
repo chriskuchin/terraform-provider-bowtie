@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/chriskuchin/terraform-provider-bowtie/internal/bowtie/client"
+	"github.com/bowtieworks/terraform-provider-bowtie/internal/bowtie/client"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"

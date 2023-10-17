@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	"github.com/chriskuchin/terraform-provider-bowtie/internal/bowtie"
+	"github.com/bowtieworks/terraform-provider-bowtie/internal/bowtie"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 )
 

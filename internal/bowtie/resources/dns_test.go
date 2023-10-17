@@ -3,7 +3,7 @@ package resources
 import (
 	"testing"
 
-	"github.com/chriskuchin/terraform-provider-bowtie/internal/bowtie/client"
+	"github.com/bowtieworks/terraform-provider-bowtie/internal/bowtie/client"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
