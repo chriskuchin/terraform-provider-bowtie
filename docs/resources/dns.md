@@ -29,21 +29,22 @@ resource "bowtie_dns" "example" {
 
 ### Required
 
-- `excludes` (Attributes List) Provider Metadata storing extra API information about the exclude settings (see [below for nested schema](#nestedatt--excludes))
 - `name` (String) The DNS zone name you wish to target
-- `servers` (Attributes List) Provider Metadata storing extra API data about the server settings (see [below for nested schema](#nestedatt--servers))
+- `servers` (Attributes List) Provider Metadata storing extra API data about the upstream servers for this domain (see [below for nested schema](#nestedatt--servers))
 
 ### Optional
 
+- `excludes` (Attributes List) Provider Metadata storing extra API information about the exclude settings (see [below for nested schema](#nestedatt--excludes))
 - `include_only_sites` (List of String) The sites you only want this dns to be responsible for
-
-### Read-Only
-
-- `id` (String) The ID of the dns settings
+- `is_dns64` (Boolean) Is DNS64 var, for forcing traffic over the private tunnel.
 - `is_counted` (Boolean) Is Counted var
 - `is_drop_a` (Boolean) Whether to drop the A record or not
 - `is_drop_all` (Boolean) Should all records be dropped
 - `is_log` (Boolean) Is Log Var
+
+### Read-Only
+
+- `id` (String) The ID of the dns settings
 - `last_updated` (String) Metadata about the last time a write api was called by this provider for this resource
 
 <a id="nestedatt--excludes"></a>

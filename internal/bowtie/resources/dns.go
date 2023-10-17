@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -32,6 +31,7 @@ type dnsResourceModel struct {
 	Servers          []dnsServersResourceModel `tfsdk:"servers"`
 	IncludeOnlySites []types.String            `tfsdk:"include_only_sites"`
 	IsCounted        types.Bool                `tfsdk:"is_counted"`
+	IsDNS64          types.Bool                `tfsdk:"is_dns64"`
 	IsLog            types.Bool                `tfsdk:"is_log"`
 	IsDropA          types.Bool                `tfsdk:"is_drop_a"`
 	IsDropAll        types.Bool                `tfsdk:"is_drop_all"`
@@ -105,29 +105,29 @@ func (d *dnsResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 				Optional:            true,
 				MarkdownDescription: "The sites you only want this dns to be responsible for",
 			},
+			"is_dns64": schema.BoolAttribute{
+				Optional:            true,
+				MarkdownDescription: "Is Counted var",
+			},
 			"is_counted": schema.BoolAttribute{
-				Default:             booldefault.StaticBool(true),
-				Computed:            true,
+				Optional:            true,
 				MarkdownDescription: "Is Counted var",
 			},
 			"is_log": schema.BoolAttribute{
-				Default:             booldefault.StaticBool(false),
-				Computed:            true,
+				Optional:            true,
 				MarkdownDescription: "Is Log Var",
 			},
 			"is_drop_a": schema.BoolAttribute{
-				Default:             booldefault.StaticBool(true),
-				Computed:            true,
-				MarkdownDescription: "Whether to drop the A record or not",
+				Optional:            true,
+				MarkdownDescription: "Should all records be dropped",
 			},
 			"is_drop_all": schema.BoolAttribute{
-				Default:             booldefault.StaticBool(false),
-				Computed:            true,
+				Optional:            true,
 				MarkdownDescription: "Should all records be dropped",
 			},
 			"excludes": schema.ListNestedAttribute{
 				MarkdownDescription: "Provider Metadata storing extra API information about the exclude settings",
-				Required:            true,
+				Optional:            true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"id": schema.StringAttribute{
@@ -198,11 +198,11 @@ func (d *dnsResource) Create(ctx context.Context, req resource.CreateRequest, re
 		})
 	}
 
-	id, err := d.client.CreateDNS(plan.Name.ValueString(), servers, includeSites, plan.IsCounted.ValueBool(), plan.IsLog.ValueBool(), plan.IsDropA.ValueBool(), plan.IsDropAll.ValueBool(), excludes)
+	id, err := d.client.CreateDNS(plan.Name.ValueString(), servers, includeSites, plan.IsDNS64.ValueBool(), plan.IsCounted.ValueBool(), plan.IsLog.ValueBool(), plan.IsDropA.ValueBool(), plan.IsDropAll.ValueBool(), excludes)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed talking to bowtie server",
-			"Unexpected error craeting dns setting: "+err.Error(),
+			"Unexpected error creating dns setting: "+err.Error(),
 		)
 	}
 
@@ -293,7 +293,7 @@ func (d *dnsResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		})
 	}
 
-	err := d.client.UpsertDNS(plan.ID.ValueString(), plan.Name.ValueString(), servers, includes, plan.IsCounted.ValueBool(), plan.IsLog.ValueBool(), plan.IsDropA.ValueBool(), plan.IsDropAll.ValueBool(), excludes)
+	err := d.client.UpsertDNS(plan.ID.ValueString(), plan.Name.ValueString(), servers, includes, plan.IsDNS64.ValueBool(), plan.IsCounted.ValueBool(), plan.IsLog.ValueBool(), plan.IsDropA.ValueBool(), plan.IsDropAll.ValueBool(), excludes)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed updating the dns settings",
