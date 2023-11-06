@@ -17,12 +17,12 @@ type Group struct {
 }
 
 type ModifyUserGroupPayload struct {
-	GroupID string   `json:"group_id"`
-	UserID  []string `json:"user_id"`
+	GroupID string              `json:"group_id"`
+	Users   []map[string]string `json:"users"`
 }
 
 type ModifyUserGroupResponse struct {
-	Updated map[string]bool `json:"updated"`
+	Users map[string]bool `json:"users"`
 }
 
 type SetUserGroupMembershipPayload struct {
@@ -119,9 +119,15 @@ func (c *Client) RemoveUserFromGroup(groupID string, userIDs []string) (*ModifyU
 }
 
 func (c *Client) modifyUserGroup(action, groupID string, userIDs []string) (*ModifyUserGroupResponse, error) {
+	var userIDPayloads []map[string]string = []map[string]string{}
+	for _, userId := range userIDs {
+		userIDPayloads = append(userIDPayloads, map[string]string{
+			"id": userId,
+		})
+	}
 	payload, err := json.Marshal(ModifyUserGroupPayload{
 		GroupID: groupID,
-		UserID:  userIDs,
+		Users:   userIDPayloads,
 	})
 	if err != nil {
 		return nil, err
