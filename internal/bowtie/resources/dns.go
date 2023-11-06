@@ -35,6 +35,7 @@ type dnsResourceModel struct {
 	IsLog            types.Bool                `tfsdk:"is_log"`
 	IsDropA          types.Bool                `tfsdk:"is_drop_a"`
 	IsDropAll        types.Bool                `tfsdk:"is_drop_all"`
+	IsSearchDomain   types.Bool                `tfsdk:"is_search_domain"`
 	DNS64Exclude     []dnsExcludeResourceModel `tfsdk:"excludes"`
 }
 
@@ -107,23 +108,33 @@ func (d *dnsResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 			},
 			"is_counted": schema.BoolAttribute{
 				Default:             booldefault.StaticBool(true),
+				Optional:            true,
 				Computed:            true,
 				MarkdownDescription: "Is Counted var",
 			},
 			"is_log": schema.BoolAttribute{
 				Default:             booldefault.StaticBool(false),
+				Optional:            true,
 				Computed:            true,
 				MarkdownDescription: "Is Log Var",
 			},
 			"is_drop_a": schema.BoolAttribute{
 				Default:             booldefault.StaticBool(true),
+				Optional:            true,
 				Computed:            true,
 				MarkdownDescription: "Whether to drop the A record or not",
 			},
 			"is_drop_all": schema.BoolAttribute{
 				Default:             booldefault.StaticBool(false),
+				Optional:            true,
 				Computed:            true,
 				MarkdownDescription: "Should all records be dropped",
+			},
+			"is_search_domain": schema.BoolAttribute{
+				Default:             booldefault.StaticBool(false),
+				Optional:            true,
+				Computed:            true,
+				MarkdownDescription: "should be treated as a search domain",
 			},
 			"excludes": schema.ListNestedAttribute{
 				MarkdownDescription: "Provider Metadata storing extra API information about the exclude settings",
@@ -198,7 +209,7 @@ func (d *dnsResource) Create(ctx context.Context, req resource.CreateRequest, re
 		})
 	}
 
-	id, err := d.client.CreateDNS(plan.Name.ValueString(), servers, includeSites, plan.IsCounted.ValueBool(), plan.IsLog.ValueBool(), plan.IsDropA.ValueBool(), plan.IsDropAll.ValueBool(), excludes)
+	id, err := d.client.CreateDNS(plan.Name.ValueString(), servers, includeSites, plan.IsCounted.ValueBool(), plan.IsLog.ValueBool(), plan.IsDropA.ValueBool(), plan.IsDropAll.ValueBool(), plan.IsSearchDomain.ValueBool(), excludes)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed talking to bowtie server",
@@ -293,7 +304,7 @@ func (d *dnsResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		})
 	}
 
-	err := d.client.UpsertDNS(plan.ID.ValueString(), plan.Name.ValueString(), servers, includes, plan.IsCounted.ValueBool(), plan.IsLog.ValueBool(), plan.IsDropA.ValueBool(), plan.IsDropAll.ValueBool(), excludes)
+	err := d.client.UpsertDNS(plan.ID.ValueString(), plan.Name.ValueString(), servers, includes, plan.IsCounted.ValueBool(), plan.IsLog.ValueBool(), plan.IsDropA.ValueBool(), plan.IsDropAll.ValueBool(), plan.IsSearchDomain.ValueBool(), excludes)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed updating the dns settings",
