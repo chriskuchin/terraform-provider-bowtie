@@ -17,16 +17,16 @@ type Group struct {
 }
 
 type ModifyUserGroupPayload struct {
-	GroupID string   `json:"group_id"`
-	UserID  []string `json:"user_id"`
+	GroupID string              `json:"group_id"`
+	Users   []map[string]string `json:"users"`
 }
 
 type ModifyUserGroupResponse struct {
-	Updated map[string]bool `json:"updated"`
+	Users map[string]bool `json:"users"`
 }
 
 type SetUserGroupMembershipPayload struct {
-	Users []string `json:"users"`
+	Users []map[string]string `json:"users"`
 }
 
 func (c *Client) GetGroup(id string) (*Group, error) {
@@ -119,9 +119,15 @@ func (c *Client) RemoveUserFromGroup(groupID string, userIDs []string) (*ModifyU
 }
 
 func (c *Client) modifyUserGroup(action, groupID string, userIDs []string) (*ModifyUserGroupResponse, error) {
+	var userIDPayloads []map[string]string = []map[string]string{}
+	for _, userId := range userIDs {
+		userIDPayloads = append(userIDPayloads, map[string]string{
+			"id": userId,
+		})
+	}
 	payload, err := json.Marshal(ModifyUserGroupPayload{
 		GroupID: groupID,
-		UserID:  userIDs,
+		Users:   userIDPayloads,
 	})
 	if err != nil {
 		return nil, err
@@ -154,8 +160,15 @@ func (c *Client) DeleteGroup(groupID string) error {
 }
 
 func (c *Client) SetGroupMembership(groupID string, users []string) error {
+	var userIDPayloads []map[string]string = []map[string]string{}
+	for _, userId := range users {
+		userIDPayloads = append(userIDPayloads, map[string]string{
+			"id": userId,
+		})
+	}
+
 	payload := SetUserGroupMembershipPayload{
-		Users: users,
+		Users: userIDPayloads,
 	}
 
 	body, err := json.Marshal(payload)
