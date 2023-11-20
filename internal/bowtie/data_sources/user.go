@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/chriskuchin/terraform-provider-bowtie/internal/bowtie/client"
+	"github.com/bowtieworks/terraform-provider-bowtie/internal/bowtie/client"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"

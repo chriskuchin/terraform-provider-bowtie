@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/chriskuchin/terraform-provider-bowtie/internal/bowtie/client"
+	"github.com/bowtieworks/terraform-provider-bowtie/internal/bowtie/client"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -32,6 +32,7 @@ type dnsResourceModel struct {
 	Servers          []dnsServersResourceModel `tfsdk:"servers"`
 	IncludeOnlySites types.List                `tfsdk:"include_only_sites"`
 	IsCounted        types.Bool                `tfsdk:"is_counted"`
+	IsDNS64          types.Bool                `tfsdk:"is_dns64"`
 	IsLog            types.Bool                `tfsdk:"is_log"`
 	IsDropA          types.Bool                `tfsdk:"is_drop_a"`
 	IsDropAll        types.Bool                `tfsdk:"is_drop_all"`
@@ -109,6 +110,10 @@ func (d *dnsResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 				Optional:            true,
 				MarkdownDescription: "The sites you only want this dns to be responsible for",
 			},
+			"is_dns64": schema.BoolAttribute{
+				Optional:            true,
+				MarkdownDescription: "Is Counted var",
+			},
 			"is_counted": schema.BoolAttribute{
 				Default:             booldefault.StaticBool(true),
 				Optional:            true,
@@ -141,7 +146,7 @@ func (d *dnsResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 			},
 			"excludes": schema.ListNestedAttribute{
 				MarkdownDescription: "Provider Metadata storing extra API information about the exclude settings",
-				Required:            true,
+				Optional:            true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"id": schema.StringAttribute{
@@ -220,7 +225,7 @@ func (d *dnsResource) Create(ctx context.Context, req resource.CreateRequest, re
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed talking to bowtie server",
-			"Unexpected error craeting dns setting: "+err.Error(),
+			"Unexpected error creating dns setting: "+err.Error(),
 		)
 	}
 

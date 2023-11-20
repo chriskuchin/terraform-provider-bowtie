@@ -1,4 +1,4 @@
-module github.com/chriskuchin/terraform-provider-bowtie
+module github.com/bowtieworks/terraform-provider-bowtie
 
 go 1.20
 

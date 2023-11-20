@@ -27,7 +27,7 @@ func (c *Client) UpsertDNS(id, name string, serverAddrs []Server, includeOnlySit
 	var payload DNS = DNS{
 		ID:               id,
 		Name:             name,
-		IsDNS64:          true,
+		IsDNS64:          isDNS64,
 		Servers:          servers,
 		IncludeOnlySites: includeOnlySites,
 		IsCounted:        isCounted,

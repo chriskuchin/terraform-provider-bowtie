@@ -4,9 +4,9 @@ import (
 	"context"
 	"os"
 
-	"github.com/chriskuchin/terraform-provider-bowtie/internal/bowtie/client"
-	"github.com/chriskuchin/terraform-provider-bowtie/internal/bowtie/data_sources"
-	"github.com/chriskuchin/terraform-provider-bowtie/internal/bowtie/resources"
+	"github.com/bowtieworks/terraform-provider-bowtie/internal/bowtie/client"
+	"github.com/bowtieworks/terraform-provider-bowtie/internal/bowtie/data_sources"
+	"github.com/bowtieworks/terraform-provider-bowtie/internal/bowtie/resources"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
