@@ -9,12 +9,12 @@ import (
 	"github.com/google/uuid"
 )
 
-func (c *Client) CreateDNS(name string, serverAddrs []Server, includeOnlySites []string, isCounted, isLog, isDropA, isDropAll, isSearchDomain bool, exlude []DNSExclude) (string, error) {
+func (c *Client) CreateDNS(name string, serverAddrs []Server, includeOnlySites []string, isDNS64, isCounted, isLog, isDropA, isDropAll, isSearchDomain bool, exlude []DNSExclude) (string, error) {
 	id := uuid.NewString()
-	return id, c.UpsertDNS(id, name, serverAddrs, includeOnlySites, isCounted, isLog, isDropA, isDropAll, isSearchDomain, exlude)
+	return id, c.UpsertDNS(id, name, serverAddrs, includeOnlySites, isDNS64, isCounted, isLog, isDropA, isDropAll, isSearchDomain, exlude)
 }
 
-func (c *Client) UpsertDNS(id, name string, serverAddrs []Server, includeOnlySites []string, isCounted, isLog, isDropA, isDropAll, isSearchDomain bool, exlude []DNSExclude) error {
+func (c *Client) UpsertDNS(id, name string, serverAddrs []Server, includeOnlySites []string, isDNS64, isCounted, isLog, isDropA, isDropAll, isSearchDomain bool, exlude []DNSExclude) error {
 	var servers map[string]Server = map[string]Server{}
 	for _, addr := range serverAddrs {
 		servers[addr.ID] = addr

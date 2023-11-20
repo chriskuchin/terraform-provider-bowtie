@@ -221,7 +221,7 @@ func (d *dnsResource) Create(ctx context.Context, req resource.CreateRequest, re
 		})
 	}
 
-	id, err := d.client.CreateDNS(plan.Name.ValueString(), servers, includeSites, plan.IsCounted.ValueBool(), plan.IsLog.ValueBool(), plan.IsDropA.ValueBool(), plan.IsDropAll.ValueBool(), plan.IsSearchDomain.ValueBool(), excludes)
+	id, err := d.client.CreateDNS(plan.Name.ValueString(), servers, includeSites, plan.IsDNS64.ValueBool(), plan.IsCounted.ValueBool(), plan.IsLog.ValueBool(), plan.IsDropA.ValueBool(), plan.IsDropAll.ValueBool(), plan.IsSearchDomain.ValueBool(), excludes)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed talking to bowtie server",
@@ -340,7 +340,7 @@ func (d *dnsResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		})
 	}
 
-	err := d.client.UpsertDNS(plan.ID.ValueString(), plan.Name.ValueString(), servers, includes, plan.IsCounted.ValueBool(), plan.IsLog.ValueBool(), plan.IsDropA.ValueBool(), plan.IsDropAll.ValueBool(), plan.IsSearchDomain.ValueBool(), excludes)
+	err := d.client.UpsertDNS(plan.ID.ValueString(), plan.Name.ValueString(), servers, includes, plan.IsDNS64.ValueBool(), plan.IsCounted.ValueBool(), plan.IsLog.ValueBool(), plan.IsDropA.ValueBool(), plan.IsDropAll.ValueBool(), plan.IsSearchDomain.ValueBool(), excludes)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed updating the dns settings",
