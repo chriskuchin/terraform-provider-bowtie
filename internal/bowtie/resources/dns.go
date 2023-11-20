@@ -11,10 +11,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -30,7 +30,7 @@ type dnsResourceModel struct {
 	LastUpdated      types.String              `tfsdk:"last_updated"`
 	Name             types.String              `tfsdk:"name"`
 	Servers          []dnsServersResourceModel `tfsdk:"servers"`
-	IncludeOnlySites []types.String            `tfsdk:"include_only_sites"`
+	IncludeOnlySites types.List                `tfsdk:"include_only_sites"`
 	IsCounted        types.Bool                `tfsdk:"is_counted"`
 	IsLog            types.Bool                `tfsdk:"is_log"`
 	IsDropA          types.Bool                `tfsdk:"is_drop_a"`
@@ -97,6 +97,9 @@ func (d *dnsResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 						"order": schema.Int64Attribute{
 							MarkdownDescription: "The order for this dns server",
 							Computed:            true,
+							PlanModifiers: []planmodifier.Int64{
+								int64planmodifier.UseStateForUnknown(),
+							},
 						},
 					},
 				},
@@ -155,6 +158,9 @@ func (d *dnsResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 						"order": schema.Int64Attribute{
 							MarkdownDescription: "",
 							Computed:            true,
+							PlanModifiers: []planmodifier.Int64{
+								int64planmodifier.UseStateForUnknown(),
+							},
 						},
 					},
 				},
@@ -195,9 +201,10 @@ func (d *dnsResource) Create(ctx context.Context, req resource.CreateRequest, re
 		})
 	}
 
-	includeSites := []string{}
-	for _, site := range plan.IncludeOnlySites {
-		includeSites = append(includeSites, site.ValueString())
+	var includeSites []string
+	resp.Diagnostics.Append(plan.IncludeOnlySites.ElementsAs(ctx, &includeSites, false)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
 	excludes := []client.DNSExclude{}
@@ -257,16 +264,38 @@ func (d *dnsResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 		return
 	}
 
-	tflog.Debug(ctx, fmt.Sprintf("!!!!!!!!!! %+v", dns))
+	state.Servers = []dnsServersResourceModel{}
+	for _, v := range dns.Servers {
+		state.Servers = append(state.Servers, dnsServersResourceModel{
+			ID:    types.StringValue(v.ID),
+			Addr:  types.StringValue(v.Addr),
+			Order: types.Int64Value(v.Order),
+		})
+	}
 
-	// state.Servers = []dnsServersResourceModel{}
-	// for _, v := range dns.Servers {
-	// 	state.Servers[v.Order] = dnsServersResourceModel{
-	// 		ID:    types.StringValue(v.ID),
-	// 		Addr:  types.StringValue(v.Addr),
-	// 		Order: types.Int64Value(v.Order),
-	// 	}
-	// }
+	state.DNS64Exclude = []dnsExcludeResourceModel{}
+	for _, v := range dns.DNS64Exclude {
+		state.DNS64Exclude = append(state.DNS64Exclude, dnsExcludeResourceModel{
+			ID:    types.StringValue(v.ID),
+			Name:  types.StringValue(v.Name),
+			Order: types.Int64Value(v.Order),
+		})
+	}
+
+	includeSites, diags := types.ListValueFrom(ctx, types.StringType, dns.IncludeOnlySites)
+	if diags.HasError() {
+		return
+	}
+
+	state.IncludeOnlySites = includeSites
+
+	state.Name = types.StringValue(dns.Name)
+
+	state.IsCounted = types.BoolValue(dns.IsCounted)
+	state.IsDropA = types.BoolValue(dns.IsDropA)
+	state.IsDropAll = types.BoolValue(dns.IsDropAll)
+	state.IsLog = types.BoolValue(dns.IsLog)
+	state.IsSearchDomain = types.BoolValue(dns.IsSearchDomain)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
 }
@@ -278,10 +307,12 @@ func (d *dnsResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		return
 	}
 
-	var includes []string = []string{}
-	for _, include := range plan.IncludeOnlySites {
-		includes = append(includes, include.ValueString())
+	var includes []string
+	resp.Diagnostics.Append(plan.IncludeOnlySites.ElementsAs(ctx, &includes, false)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
+
 	var servers []client.Server = []client.Server{}
 	for _, server := range plan.Servers {
 		id := server.ID.ValueString()
