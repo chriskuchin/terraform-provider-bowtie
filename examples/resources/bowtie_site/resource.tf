@@ -1,3 +1,4 @@
+# Create a new site named "Corporate"
 resource "bowtie_site" "corp" {
-  name = "corporate"
+  name = "Corporate"
 }

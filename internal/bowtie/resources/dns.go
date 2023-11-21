@@ -62,41 +62,43 @@ func (d *dnsResource) Metadata(ctx context.Context, req resource.MetadataRequest
 
 func (d *dnsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "",
+		MarkdownDescription: `
+Used to control organization DNS settings. ` + "`{{ .Name }}`" + ` can enable resolution for internal names reachable over the private network tunnel.
+`,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:            true,
-				MarkdownDescription: "The ID of the dns settings",
+				MarkdownDescription: "Internal resource ID.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"last_updated": schema.StringAttribute{
 				Computed:            true,
-				MarkdownDescription: "Metadata about the last time a write api was called by this provider for this resource",
+				MarkdownDescription: "Metadata about the last time a write API was called by this provider for this resource.",
 			},
 			"name": schema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "The DNS zone name you wish to target",
+				MarkdownDescription: "The DNS zone name you wish to target. Example: `example.com`",
 			},
 			"servers": schema.ListNestedAttribute{
-				MarkdownDescription: "Provider Metadata storing extra API data about the server settings",
+				MarkdownDescription: "Provider Metadata storing extra API data about the upstream servers for this domain",
 				Required:            true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"id": schema.StringAttribute{
-							MarkdownDescription: "The bowtie ID for this dns server",
+							MarkdownDescription: "Internal resource ID.",
 							Computed:            true,
 							PlanModifiers: []planmodifier.String{
 								stringplanmodifier.UseStateForUnknown(),
 							},
 						},
 						"addr": schema.StringAttribute{
-							MarkdownDescription: "The IP address for this dns server",
+							MarkdownDescription: "The IP address for this DNS server.",
 							Required:            true,
 						},
 						"order": schema.Int64Attribute{
-							MarkdownDescription: "The order for this dns server",
+							MarkdownDescription: "The order for this DNS server.",
 							Computed:            true,
 							PlanModifiers: []planmodifier.Int64{
 								int64planmodifier.UseStateForUnknown(),
@@ -108,60 +110,60 @@ func (d *dnsResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 			"include_only_sites": schema.ListAttribute{
 				ElementType:         types.StringType,
 				Optional:            true,
-				MarkdownDescription: "The sites you only want this dns to be responsible for",
+				MarkdownDescription: "Limit name resolution for this domain only to these sites.",
 			},
 			"is_dns64": schema.BoolAttribute{
 				Optional:            true,
-				MarkdownDescription: "Is Counted var",
+				MarkdownDescription: "Whether to resolve names using DNS64.",
 			},
 			"is_counted": schema.BoolAttribute{
 				Default:             booldefault.StaticBool(true),
 				Optional:            true,
 				Computed:            true,
-				MarkdownDescription: "Is Counted var",
+				MarkdownDescription: "Whether to only log metrics for this domain and not all requests.",
 			},
 			"is_log": schema.BoolAttribute{
 				Default:             booldefault.StaticBool(false),
 				Optional:            true,
 				Computed:            true,
-				MarkdownDescription: "Is Log Var",
+				MarkdownDescription: "Whether to log all requests for names in this domain.",
 			},
 			"is_drop_a": schema.BoolAttribute{
 				Default:             booldefault.StaticBool(true),
 				Optional:            true,
 				Computed:            true,
-				MarkdownDescription: "Whether to drop the A record or not",
+				MarkdownDescription: "Whether to drop A record responses from requests for this domain.",
 			},
 			"is_drop_all": schema.BoolAttribute{
 				Default:             booldefault.StaticBool(false),
 				Optional:            true,
 				Computed:            true,
-				MarkdownDescription: "Should all records be dropped",
+				MarkdownDescription: "Whether all record responses for this domain should be dropped.",
 			},
 			"is_search_domain": schema.BoolAttribute{
 				Default:             booldefault.StaticBool(false),
 				Optional:            true,
 				Computed:            true,
-				MarkdownDescription: "should be treated as a search domain",
+				MarkdownDescription: "Whether this domain should be treated as a search domain.",
 			},
 			"excludes": schema.ListNestedAttribute{
-				MarkdownDescription: "Provider Metadata storing extra API information about the exclude settings",
+				MarkdownDescription: "Names under this domain to exclude from resolution.",
 				Optional:            true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"id": schema.StringAttribute{
-							MarkdownDescription: "",
+							MarkdownDescription: "Internal resource ID.",
 							Computed:            true,
 							PlanModifiers: []planmodifier.String{
 								stringplanmodifier.UseStateForUnknown(),
 							},
 						},
 						"name": schema.StringAttribute{
-							MarkdownDescription: "",
+							MarkdownDescription: "Name to exclude sending to the upstream server for resolution.",
 							Required:            true,
 						},
 						"order": schema.Int64Attribute{
-							MarkdownDescription: "",
+							MarkdownDescription: "Order when presented with other excluded names in the web interface",
 							Computed:            true,
 							PlanModifiers: []planmodifier.Int64{
 								int64planmodifier.UseStateForUnknown(),

@@ -1,5 +1,5 @@
 resource "bowtie_group" "admins" {
-  name = "admins"
+  name = "Administrators"
 }
 
 resource "bowtie_group_membership" "admin_memberships" {

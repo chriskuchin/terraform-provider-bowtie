@@ -42,3 +42,6 @@ package = "libargon2"
 
 [[commands]]
 package = "terraform"
+
+[[commands]]
+package = "vale"
