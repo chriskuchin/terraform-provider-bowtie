@@ -269,47 +269,47 @@ func (d *dnsResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 		return
 	}
 
-	dns, err := d.client.GetDNS(state.ID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Failed communicating with the bowtie api",
-			"Unexpected error reading DNS settings: "+err.Error(),
-		)
-		return
-	}
+	// dns, err := d.client.GetDNS(state.ID.ValueString())
+	// if err != nil {
+	// 	resp.Diagnostics.AddError(
+	// 		"Failed communicating with the bowtie api",
+	// 		"Unexpected error reading DNS settings: "+err.Error(),
+	// 	)
+	// 	return
+	// }
 
-	state.Servers = []dnsServersResourceModel{}
-	for _, v := range dns.Servers {
-		state.Servers = append(state.Servers, dnsServersResourceModel{
-			ID:    types.StringValue(v.ID),
-			Addr:  types.StringValue(v.Addr),
-			Order: types.Int64Value(v.Order),
-		})
-	}
+	// state.Servers = []dnsServersResourceModel{}
+	// for _, v := range dns.Servers {
+	// 	state.Servers = append(state.Servers, dnsServersResourceModel{
+	// 		ID:    types.StringValue(v.ID),
+	// 		Addr:  types.StringValue(v.Addr),
+	// 		Order: types.Int64Value(v.Order),
+	// 	})
+	// }
 
-	state.DNS64Exclude = []dnsExcludeResourceModel{}
-	for _, v := range dns.DNS64Exclude {
-		state.DNS64Exclude = append(state.DNS64Exclude, dnsExcludeResourceModel{
-			ID:    types.StringValue(v.ID),
-			Name:  types.StringValue(v.Name),
-			Order: types.Int64Value(v.Order),
-		})
-	}
+	// state.DNS64Exclude = []dnsExcludeResourceModel{}
+	// for _, v := range dns.DNS64Exclude {
+	// 	state.DNS64Exclude = append(state.DNS64Exclude, dnsExcludeResourceModel{
+	// 		ID:    types.StringValue(v.ID),
+	// 		Name:  types.StringValue(v.Name),
+	// 		Order: types.Int64Value(v.Order),
+	// 	})
+	// }
 
-	includeSites, diags := types.ListValueFrom(ctx, types.StringType, dns.IncludeOnlySites)
-	if diags.HasError() {
-		return
-	}
+	// includeSites, diags := types.ListValueFrom(ctx, types.StringType, dns.IncludeOnlySites)
+	// if diags.HasError() {
+	// 	return
+	// }
 
-	state.IncludeOnlySites = includeSites
+	// state.IncludeOnlySites = includeSites
 
-	state.Name = types.StringValue(dns.Name)
+	// state.Name = types.StringValue(dns.Name)
 
-	state.IsCounted = types.BoolValue(dns.IsCounted)
-	state.IsDropA = types.BoolValue(dns.IsDropA)
-	state.IsDropAll = types.BoolValue(dns.IsDropAll)
-	state.IsLog = types.BoolValue(dns.IsLog)
-	state.IsSearchDomain = types.BoolValue(dns.IsSearchDomain)
+	// state.IsCounted = types.BoolValue(dns.IsCounted)
+	// state.IsDropA = types.BoolValue(dns.IsDropA)
+	// state.IsDropAll = types.BoolValue(dns.IsDropAll)
+	// state.IsLog = types.BoolValue(dns.IsLog)
+	// state.IsSearchDomain = types.BoolValue(dns.IsSearchDomain)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
 }
