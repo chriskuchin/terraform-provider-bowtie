@@ -59,7 +59,10 @@ func (c *Client) WhoAmI() (*Me, error) {
 	}
 
 	var me *Me = &Me{}
-	json.Unmarshal(body, me)
+	jsonErr := json.Unmarshal(body, me)
+	if jsonErr != nil {
+		return nil, jsonErr
+	}
 
 	return me, nil
 }

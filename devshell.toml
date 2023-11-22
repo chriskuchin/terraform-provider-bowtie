@@ -26,13 +26,13 @@ package = "gocode-gomod"
 package = "godef"
 
 [[commands]]
+package = "golangci-lint"
+
+[[commands]]
 package = "golint"
 
 [[commands]]
 package = "gcc"
-
-[[commands]]
-package = "httpie"
 
 [[commands]]
 package = "just"

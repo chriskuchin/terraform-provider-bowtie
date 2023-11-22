@@ -1,6 +1,6 @@
 envvars := "config.env"
 
-dotenv-filename := "config.env"
+set dotenv-filename := "config.env"
 
 container_cmd := env_var_or_default("COMPOSE_CMD", "docker-compose")
 
@@ -19,24 +19,6 @@ test:
 # Run all tests, including acceptance tests
 acceptance-test: container
 	#!/usr/bin/env bash
-
-	source config.env
-	while true
-	do
-	    http --quiet --check-status :3000/-net/api/v0/user/login \
-		  email=$BOWTIE_USERNAME \
-		  password=$BOWTIE_PASSWORD
-
-		if [[ $? -eq 3 ]]
-		then
-		    echo "Container is up"
-			break
-		fi
-
-		echo "Waiting for container to come up..."
-		sleep 1
-	done
-
 	TF_ACC=1 just test
 	just stop-container || true
 
@@ -50,7 +32,7 @@ site-id:
 		echo "SITE_ID present in $conf"
 	else
 		set -x
-		echo "SITE_ID=$(uuidgen)" >> $conf
+		echo "export SITE_ID=$(uuidgen)" >> $conf
 	fi
 
 # Generate an init-users file for bootstrapping
@@ -70,11 +52,14 @@ init-users:
 	password=$(openssl rand -hex 16)
 	hash=$(echo -n $password | argon2 $(uuidgen) -i -t 3 -p 1 -m 12 -e)
 	echo $username:$hash > $users_file
-	echo "BOWTIE_PASSWORD=$password" >> {{envvars}}
-	echo "BOWTIE_USERNAME=$username" >> {{envvars}}
+	echo "export BOWTIE_PASSWORD=$password" >> {{envvars}}
+	echo "export BOWTIE_USERNAME=$username" >> {{envvars}}
+	echo "Generated user $username"
 
 # Start a background container for bowtie-server
 container cmd=container_cmd: site-id init-users
+	#!/usr/bin/env bash
+	source {{envvars}}
 	{{cmd}} up --detach
 
 # Stop the background container
