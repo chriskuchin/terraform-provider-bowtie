@@ -1,0 +1,41 @@
+[[commands]]
+package = "git"
+
+[[commands]]
+package = "go"
+
+[[commands]]
+package = "gotools"
+
+[[commands]]
+package = "gopls"
+
+[[commands]]
+package = "go-outline"
+
+[[commands]]
+package = "gocode"
+
+[[commands]]
+package = "gopkgs"
+
+[[commands]]
+package = "gocode-gomod"
+
+[[commands]]
+package = "godef"
+
+[[commands]]
+package = "golint"
+
+[[commands]]
+package = "gcc"
+
+[[commands]]
+package = "just"
+
+[[commands]]
+package = "libargon2"
+
+[[commands]]
+package = "terraform"
