@@ -40,7 +40,7 @@ func (c *Client) Login() error {
 		return err
 	}
 
-	if res.StatusCode != http.StatusOK {
+	if res.StatusCode != http.StatusOK && res.StatusCode != http.StatusSeeOther {
 		return fmt.Errorf("failed to login: %s", res.Status)
 	}
 

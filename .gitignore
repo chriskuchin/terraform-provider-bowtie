@@ -2,3 +2,5 @@ internal/bowtie/client/auth_test.go
 config.env
 examples/test
 terraform-provider-bowtie
+container/*
+!container/skip-gui-init

@@ -32,6 +32,9 @@ func NewClient(host, username, password string) (*Client, error) {
 		HTTPClient: &http.Client{
 			Timeout: 10 * time.Second,
 			Jar:     jar,
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				return http.ErrUseLastResponse
+			},
 		},
 		hostURL: host,
 		auth: AuthPayload{
