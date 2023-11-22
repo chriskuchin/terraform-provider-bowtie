@@ -1,8 +1,10 @@
-# Terraform Provider [Bowtie](https://docs.bowtie.works)
+# [Terraform Provider](https://registry.terraform.io/providers/bowtieworks/bowtie/latest)  for [Bowtie](https://docs.bowtie.works)
 
-## Using this provider:
+This provider enables configuration for Bowtie deployments via Terraform.
 
-In our example we'll set up these variables
+## Using this provider
+
+In our example we'll set up these variables:
 
     export TF_VAR_bowtie_admin_user=issac@bowtie.works
     export TF_VAR_bowtie_admin_password=hunter2
@@ -72,7 +74,9 @@ And then configuring a few dns records would look something like this:
 
 Then you can run `terraform plan` and `terraform apply` as usual
 
-## Building
+## Development
+
+### Building
 
 Setup your dev environment:
 
@@ -84,5 +88,26 @@ Setup your dev environment:
       }
     }
 
-
 go build -o terraform-provider-bowtie
+
+### Testing
+
+In addition to basic unit tests that can be run with `go test ./...` from the root of the repository, acceptance tests are also available.
+There is a small degree of setup to run acceptance tests because they require a local Bowtie API to perform requests against.
+
+Enter the devshell (with either `direnv allow` in this directory, `nix develop .`, or `nix-shell` or, alternatively, install the development dependencies manually:
+
+- `just` to drive tasks
+- `argon2` for password hash generation
+- `httpie` for container health checks
+- `go`
+
+Additionally, you will need a functional container runtime to operate the Bowtie server container.
+A `compose.yml` file is provided and knowing working configurations include `docker`, `podman`, and `finch`.
+Override the `COMPOSE_CMD` in `.envrc.local` if you’re using something other than `docker-compose`.
+
+With the prerequisites satisfied, run the acceptance tests with:
+
+	just acceptance-test
+
+For a pristine environment afterward, you may `just clean` to remove leftover container files in `./container`.

@@ -4,3 +4,4 @@ examples/test
 terraform-provider-bowtie
 container/*
 !container/skip-gui-init
+.envrc.local

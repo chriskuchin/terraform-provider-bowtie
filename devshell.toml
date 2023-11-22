@@ -32,6 +32,9 @@ package = "golint"
 package = "gcc"
 
 [[commands]]
+package = "httpie"
+
+[[commands]]
 package = "just"
 
 [[commands]]
