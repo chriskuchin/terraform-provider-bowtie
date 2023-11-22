@@ -41,7 +41,7 @@ func (c *Client) Login(ctx context.Context) error {
 		return err
 	}
 
-	if res.StatusCode != http.StatusSeeOther {
+	if res.StatusCode != http.StatusSeeOther && res.StatusCode != http.StatusOK {
 		return fmt.Errorf("failed to login: %s", res.Status)
 	}
 
