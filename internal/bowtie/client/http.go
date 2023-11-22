@@ -1,6 +1,7 @@
 package client
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -23,7 +24,7 @@ type AuthPayload struct {
 
 const apiVersionPrefix = "/-net/api/v0"
 
-func NewClient(host, username, password string) (*Client, error) {
+func NewClient(ctx context.Context, host, username, password string) (*Client, error) {
 	jar, err := cookiejar.New(nil)
 	if err != nil {
 		return nil, err
@@ -40,7 +41,7 @@ func NewClient(host, username, password string) (*Client, error) {
 		},
 	}
 
-	if err := c.Login(); err != nil {
+	if err := c.Login(ctx); err != nil {
 		return nil, err
 	}
 

@@ -3,6 +3,7 @@ package resources
 import (
 	"context"
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/bowtieworks/terraform-provider-bowtie/internal/bowtie/client"
@@ -241,6 +242,10 @@ func (d *dnsResource) Create(ctx context.Context, req resource.CreateRequest, re
 		})
 	}
 
+	sort.Slice(plan.Servers, func(i, j int) bool {
+		return plan.Servers[i].Order.ValueInt64() < plan.Servers[j].Order.ValueInt64()
+	})
+
 	plan.DNS64Exclude = []dnsExcludeResourceModel{}
 	for _, exclude := range excludes {
 		plan.DNS64Exclude = append(plan.DNS64Exclude, dnsExcludeResourceModel{
@@ -249,6 +254,10 @@ func (d *dnsResource) Create(ctx context.Context, req resource.CreateRequest, re
 			Order: types.Int64Value(exclude.Order),
 		})
 	}
+
+	sort.Slice(plan.DNS64Exclude, func(i, j int) bool {
+		return plan.DNS64Exclude[i].Order.ValueInt64() < plan.DNS64Exclude[j].Order.ValueInt64()
+	})
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 }

@@ -134,7 +134,7 @@ func (b *BowtieProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		return
 	}
 
-	client, err := client.NewClient(host, username, password)
+	client, err := client.NewClient(ctx, host, username, password)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to create Bowtie API Client",

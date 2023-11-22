@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"sort"
 
 	"github.com/bowtieworks/terraform-provider-bowtie/internal/bowtie/client"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -110,6 +111,7 @@ func (g *GroupMembershipResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
+	sort.Strings(groupInfo.Users)
 	stateUsers, diags := types.ListValueFrom(ctx, types.StringType, groupInfo.Users)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
