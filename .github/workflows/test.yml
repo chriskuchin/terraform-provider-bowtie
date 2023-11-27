@@ -14,28 +14,37 @@ on:
 
 jobs:
 
-  test:
-    name: Execute tests for given target
+  docs-sync:
+    name: Ensure that the user documentation is in-sync
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    strategy:
-      matrix:
-        test: [stale-docs stylecheck acceptance-test]
     steps:
+    - uses: ./.github/actions/bootstrap
+    - run: nix develop . --command just stale-docs
 
-    - name: Check out the repository
-      uses: actions/checkout@v4
+  docs-style:
+    name: Run style and spelling checks against user documentation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - uses: ./.github/actions/bootstrap
+    - run: nix develop . --command just stylecheck
 
-    - name: Install nix
-      uses: DeterminateSystems/nix-installer-action@main
+  acceptance:
+    name: Run the provider tests including acceptance tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - uses: ./.github/actions/bootstrap
+    - run: nix develop . --command just acceptance-test
 
-    - name: Setup nix caching
-      uses: DeterminateSystems/magic-nix-cache-action@main
-
-    - name: Run the ${{ matrix.test }} tests
-      run: nix develop . --command just ${{ matrix.test }}
-
-    - name: Run linters
+  lint:
+    name: Perform go linting checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - uses: ./.github/actions/bootstrap
+    - name: Run golangci-lint
       uses: golangci/golangci-lint-action@v3.7.0
       with:
         version: latest
