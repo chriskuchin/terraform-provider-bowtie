@@ -54,7 +54,10 @@ func (c *Client) ListGroups() (map[string]Group, error) {
 	}
 
 	var groups map[string]Group = map[string]Group{}
-	json.Unmarshal(body, &groups)
+	jsonErr := json.Unmarshal(body, &groups)
+	if jsonErr != nil {
+		return nil, jsonErr
+	}
 
 	return groups, nil
 }
@@ -85,7 +88,10 @@ func (c *Client) UpsertGroup(id, name string) (string, error) {
 	}
 
 	var group *Group = &Group{}
-	json.Unmarshal(body, group)
+	jsonErr := json.Unmarshal(body, group)
+	if jsonErr != nil {
+		return "", jsonErr
+	}
 
 	return id, nil
 }
