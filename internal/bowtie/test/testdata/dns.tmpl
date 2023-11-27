@@ -1,0 +1,27 @@
+{{ .provider }}
+resource "bowtie_dns" "test" {
+	name = "{{ .name }}"
+	servers = [
+  {{- range $addr := .servers }}
+    {
+      addr = "{{ $addr }}"
+    },
+  {{ end -}}
+  ]
+	excludes = [
+  {{- range $name := .excludes }}
+    {
+      name = "{{ $name }}"
+    },
+  {{ end -}}
+  ]
+
+  {{ if notNil .sites }}
+  include_only_sites = [
+  {{- range $site := .sites }}
+    "{{ $site }}",
+  {{ end -}}
+  ]
+
+  {{ end }}
+}

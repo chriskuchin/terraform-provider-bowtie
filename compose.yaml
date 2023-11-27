@@ -5,9 +5,9 @@ services:
       - "3000:3000"
     volumes:
       - ./container/:/var/lib/bowtie
+    env_file: config.env
     environment:
       BOWTIE_BIND_ADDRESS: 0.0.0.0
       BOWTIE_SYNC_STRATEGY: do-not-sync
       __BOWTIE_DEBUG_DISABLE_NETWORKING: 1
       __BOWTIE_DEBUG_DISABLE_SECURE_COOKIE: 1
-      SITE_ID:
