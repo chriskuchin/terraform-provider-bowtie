@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -145,9 +146,21 @@ func (d *dnsResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 				Computed:            true,
 				MarkdownDescription: "should be treated as a search domain",
 			},
+			// "excludes": schema.ObjectAttribute{
+			// 	MarkdownDescription: "Provider Metadata storing extra API information about the exclude settings",
+			// 	AttributeTypes: map[string]attr.Type{
+			// 		"id":    types.StringType,
+			// 		"name":  types.StringType,
+			// 		"order": types.Int64Type,
+			// 	},
+			// 	Computed: true,
+			// 	Optional: true,
+			// 	PlanModifiers: []planmodifier.Object{
+			// 		objectplanmodifier.UseStateForUnknown(),
+			// 	},
+			// },
 			"excludes": schema.ListNestedAttribute{
-				MarkdownDescription: "Provider Metadata storing extra API information about the exclude settings",
-				Optional:            true,
+				Optional: true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"id": schema.StringAttribute{
@@ -269,47 +282,54 @@ func (d *dnsResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 		return
 	}
 
-	// dns, err := d.client.GetDNS(state.ID.ValueString())
-	// if err != nil {
-	// 	resp.Diagnostics.AddError(
-	// 		"Failed communicating with the bowtie api",
-	// 		"Unexpected error reading DNS settings: "+err.Error(),
-	// 	)
-	// 	return
-	// }
+	dns, err := d.client.GetDNS(state.ID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Failed communicating with the bowtie api",
+			"Unexpected error reading DNS settings: "+err.Error(),
+		)
+		return
+	}
 
-	// state.Servers = []dnsServersResourceModel{}
-	// for _, v := range dns.Servers {
-	// 	state.Servers = append(state.Servers, dnsServersResourceModel{
-	// 		ID:    types.StringValue(v.ID),
-	// 		Addr:  types.StringValue(v.Addr),
-	// 		Order: types.Int64Value(v.Order),
-	// 	})
-	// }
+	state.Servers = []dnsServersResourceModel{}
+	for _, v := range dns.Servers {
+		state.Servers = append(state.Servers, dnsServersResourceModel{
+			ID:    types.StringValue(v.ID),
+			Addr:  types.StringValue(v.Addr),
+			Order: types.Int64Value(v.Order),
+		})
+	}
 
-	// state.DNS64Exclude = []dnsExcludeResourceModel{}
-	// for _, v := range dns.DNS64Exclude {
-	// 	state.DNS64Exclude = append(state.DNS64Exclude, dnsExcludeResourceModel{
-	// 		ID:    types.StringValue(v.ID),
-	// 		Name:  types.StringValue(v.Name),
-	// 		Order: types.Int64Value(v.Order),
-	// 	})
-	// }
+	sort.Slice(state.Servers, func(i, j int) bool {
+		return state.Servers[i].Order.ValueInt64() < state.Servers[j].Order.ValueInt64()
+	})
 
-	// includeSites, diags := types.ListValueFrom(ctx, types.StringType, dns.IncludeOnlySites)
-	// if diags.HasError() {
-	// 	return
-	// }
+	state.DNS64Exclude = []dnsExcludeResourceModel{}
+	for _, v := range dns.DNS64Exclude {
+		state.DNS64Exclude = append(state.DNS64Exclude, dnsExcludeResourceModel{
+			ID:    types.StringValue(v.ID),
+			Name:  types.StringValue(v.Name),
+			Order: types.Int64Value(v.Order),
+		})
+	}
 
-	// state.IncludeOnlySites = includeSites
+	sort.Slice(state.DNS64Exclude, func(i, j int) bool {
+		return state.DNS64Exclude[i].Order.ValueInt64() < state.DNS64Exclude[j].Order.ValueInt64()
+	})
 
-	// state.Name = types.StringValue(dns.Name)
+	var includeSites []string
+	resp.Diagnostics.Append(state.IncludeOnlySites.ElementsAs(ctx, &includeSites, false)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-	// state.IsCounted = types.BoolValue(dns.IsCounted)
-	// state.IsDropA = types.BoolValue(dns.IsDropA)
-	// state.IsDropAll = types.BoolValue(dns.IsDropAll)
-	// state.IsLog = types.BoolValue(dns.IsLog)
-	// state.IsSearchDomain = types.BoolValue(dns.IsSearchDomain)
+	state.Name = types.StringValue(dns.Name)
+
+	state.IsCounted = types.BoolValue(dns.IsCounted)
+	state.IsDropA = types.BoolValue(dns.IsDropA)
+	state.IsDropAll = types.BoolValue(dns.IsDropAll)
+	state.IsLog = types.BoolValue(dns.IsLog)
+	state.IsSearchDomain = types.BoolValue(dns.IsSearchDomain)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
 }
@@ -327,6 +347,8 @@ func (d *dnsResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		return
 	}
 
+	// servers := mergeServerDetails(plan.Servers, )
+
 	var servers []client.Server = []client.Server{}
 	for _, server := range plan.Servers {
 		id := server.ID.ValueString()
@@ -340,12 +362,18 @@ func (d *dnsResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		})
 	}
 
+	tflog.Info(ctx, fmt.Sprintf("%+v\n\n", plan.DNS64Exclude))
+
 	var excludes []client.DNSExclude = []client.DNSExclude{}
-	for _, exclude := range plan.DNS64Exclude {
+	for order, exclude := range plan.DNS64Exclude {
+		id := exclude.ID.ValueString()
+		if exclude.ID.IsUnknown() {
+			id = uuid.NewString()
+		}
 		excludes = append(excludes, client.DNSExclude{
-			ID:    exclude.ID.ValueString(),
+			ID:    id,
 			Name:  exclude.Name.ValueString(),
-			Order: exclude.Order.ValueInt64(),
+			Order: int64(order),
 		})
 	}
 
