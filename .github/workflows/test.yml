@@ -19,6 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+    - uses: actions/checkout@v4
     - uses: ./.github/actions/bootstrap
     - run: nix develop . --command just stale-docs
 
@@ -27,6 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+    - uses: actions/checkout@v4
     - uses: ./.github/actions/bootstrap
     - run: nix develop . --command just stylecheck
 
@@ -35,6 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+    - uses: actions/checkout@v4
     - uses: ./.github/actions/bootstrap
     - run: nix develop . --command just acceptance-test
 
@@ -43,6 +46,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+    - uses: actions/checkout@v4
     - uses: ./.github/actions/bootstrap
     - name: Run golangci-lint
       uses: golangci/golangci-lint-action@v3.7.0

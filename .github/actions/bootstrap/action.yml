@@ -3,9 +3,6 @@ description: Bootstrap the test environment
 runs:
   using: composite
   steps:
-  - name: Check out the repository
-    uses: actions/checkout@v4
-
   - name: Install nix
     uses: DeterminateSystems/nix-installer-action@main
 
