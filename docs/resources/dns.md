@@ -34,7 +34,7 @@ resource "bowtie_dns" "example" {
 
 ### Optional
 
-- `excludes` (Attributes List) Provider Metadata storing extra API information about the exclude settings (see [below for nested schema](#nestedatt--excludes))
+- `excludes` (Attributes List) (see [below for nested schema](#nestedatt--excludes))
 - `include_only_sites` (List of String) The sites you only want this dns to be responsible for
 - `is_counted` (Boolean) Is Counted var
 - `is_dns64` (Boolean) Is Counted var
