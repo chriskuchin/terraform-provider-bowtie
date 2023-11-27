@@ -105,7 +105,10 @@ func (c *Client) UpsertResource(ctx context.Context, id, name, protocol, ip, cid
 	}
 
 	var resource BowtieResource = BowtieResource{}
-	json.Unmarshal(responsePayload, &resource)
+	err = json.Unmarshal(responsePayload, &resource)
+	if err != nil {
+		return BowtieResource{}, err
+	}
 
 	return resource, nil
 }

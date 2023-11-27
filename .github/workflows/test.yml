@@ -35,8 +35,7 @@ jobs:
     - name: Run the ${{ matrix.test }} tests
       run: nix develop . --command just ${{ matrix.test }}
 
-    # Re-enable once we’ve made policies live.
-    # - name: Run linters
-    #   uses: golangci/golangci-lint-action@v3.7.0
-    #   with:
-    #     version: latest
+    - name: Run linters
+      uses: golangci/golangci-lint-action@v3.7.0
+      with:
+        version: latest

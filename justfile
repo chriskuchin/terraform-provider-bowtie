@@ -31,7 +31,7 @@ stylecheck: generate
 
 # Run the tests
 test:
-	go test ./... -count=1
+	go test -v ./... -count=1
 
 # Run all tests, including acceptance tests
 acceptance-test: container

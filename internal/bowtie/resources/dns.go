@@ -3,6 +3,7 @@ package resources
 import (
 	"context"
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/bowtieworks/terraform-provider-bowtie/internal/bowtie/client"
@@ -15,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -243,6 +245,10 @@ func (d *dnsResource) Create(ctx context.Context, req resource.CreateRequest, re
 		})
 	}
 
+	sort.Slice(plan.Servers, func(i, j int) bool {
+		return plan.Servers[i].Order.ValueInt64() < plan.Servers[j].Order.ValueInt64()
+	})
+
 	plan.DNS64Exclude = []dnsExcludeResourceModel{}
 	for _, exclude := range excludes {
 		plan.DNS64Exclude = append(plan.DNS64Exclude, dnsExcludeResourceModel{
@@ -251,6 +257,10 @@ func (d *dnsResource) Create(ctx context.Context, req resource.CreateRequest, re
 			Order: types.Int64Value(exclude.Order),
 		})
 	}
+
+	sort.Slice(plan.DNS64Exclude, func(i, j int) bool {
+		return plan.DNS64Exclude[i].Order.ValueInt64() < plan.DNS64Exclude[j].Order.ValueInt64()
+	})
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 }
@@ -280,6 +290,10 @@ func (d *dnsResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 		})
 	}
 
+	sort.Slice(state.Servers, func(i, j int) bool {
+		return state.Servers[i].Order.ValueInt64() < state.Servers[j].Order.ValueInt64()
+	})
+
 	state.DNS64Exclude = []dnsExcludeResourceModel{}
 	for _, v := range dns.DNS64Exclude {
 		state.DNS64Exclude = append(state.DNS64Exclude, dnsExcludeResourceModel{
@@ -289,12 +303,15 @@ func (d *dnsResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 		})
 	}
 
-	includeSites, diags := types.ListValueFrom(ctx, types.StringType, dns.IncludeOnlySites)
-	if diags.HasError() {
+	sort.Slice(state.DNS64Exclude, func(i, j int) bool {
+		return state.DNS64Exclude[i].Order.ValueInt64() < state.DNS64Exclude[j].Order.ValueInt64()
+	})
+
+	var includeSites []string
+	resp.Diagnostics.Append(state.IncludeOnlySites.ElementsAs(ctx, &includeSites, false)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	state.IncludeOnlySites = includeSites
 
 	state.Name = types.StringValue(dns.Name)
 
@@ -333,12 +350,18 @@ func (d *dnsResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		})
 	}
 
+	tflog.Info(ctx, fmt.Sprintf("%+v\n\n", plan.DNS64Exclude))
+
 	var excludes []client.DNSExclude = []client.DNSExclude{}
-	for _, exclude := range plan.DNS64Exclude {
+	for order, exclude := range plan.DNS64Exclude {
+		id := exclude.ID.ValueString()
+		if exclude.ID.IsUnknown() {
+			id = uuid.NewString()
+		}
 		excludes = append(excludes, client.DNSExclude{
-			ID:    exclude.ID.ValueString(),
+			ID:    id,
 			Name:  exclude.Name.ValueString(),
-			Order: exclude.Order.ValueInt64(),
+			Order: int64(order),
 		})
 	}
 
