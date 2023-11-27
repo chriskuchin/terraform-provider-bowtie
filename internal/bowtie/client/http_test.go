@@ -36,6 +36,21 @@ func TestClient_getHostURL(t *testing.T) {
 			want: "https://example.com/-net/api/v0/user/login",
 		},
 		{
+			name: "local login",
+			fields: fields{
+				HTTPClient: nil,
+				hostURL:    "http://localhost:3000",
+				auth: AuthPayload{
+					Username: "test@example.com",
+					Password: "passw0rd123",
+				},
+			},
+			args: args{
+				path: "/user/login",
+			},
+			want: "http://localhost:3000/-net/api/v0/user/login",
+		},
+		{
 			name: "me",
 			fields: fields{
 				HTTPClient: nil,

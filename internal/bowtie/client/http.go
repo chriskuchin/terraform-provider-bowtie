@@ -33,6 +33,9 @@ func NewClient(ctx context.Context, host, username, password string) (*Client, e
 		HTTPClient: &http.Client{
 			Timeout: 10 * time.Second,
 			Jar:     jar,
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				return http.ErrUseLastResponse
+			},
 		},
 		hostURL: host,
 		auth: AuthPayload{

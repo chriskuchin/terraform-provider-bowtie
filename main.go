@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	"github.com/bowtieworks/terraform-provider-bowtie/internal/bowtie"
+	"github.com/bowtieworks/terraform-provider-bowtie/internal/bowtie/provider"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 )
 
@@ -21,7 +21,7 @@ import (
 func main() {
 	err := providerserver.Serve(
 		context.Background(),
-		bowtie.New,
+		provider.New,
 		providerserver.ServeOpts{
 			Address: "registry.terraform.io/chriskuchin/bowtie",
 			// Debug:   true,
