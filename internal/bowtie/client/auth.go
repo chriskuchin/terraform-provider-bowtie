@@ -40,7 +40,7 @@ func (c *Client) Login() error {
 		return err
 	}
 
-	if res.StatusCode != http.StatusOK {
+	if res.StatusCode != http.StatusOK && res.StatusCode != http.StatusSeeOther {
 		return fmt.Errorf("failed to login: %s", res.Status)
 	}
 
@@ -59,7 +59,10 @@ func (c *Client) WhoAmI() (*Me, error) {
 	}
 
 	var me *Me = &Me{}
-	json.Unmarshal(body, me)
+	jsonErr := json.Unmarshal(body, me)
+	if jsonErr != nil {
+		return nil, jsonErr
+	}
 
 	return me, nil
 }
