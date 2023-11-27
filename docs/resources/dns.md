@@ -3,16 +3,19 @@
 page_title: "bowtie_dns Resource - terraform-provider-bowtie"
 subcategory: ""
 description: |-
-  
+  Used to control organization DNS settings. bowtie_dns can enable resolution for internal names reachable over the private network tunnel.
 ---
 
 # bowtie_dns (Resource)
 
-
+Used to control organization DNS settings. `bowtie_dns` can enable resolution for internal names reachable over the private network tunnel.
 
 ## Example Usage
 
 ```terraform
+# Resolve `example.com` names using the DNS host at 192.0.2.1 but do
+# not pass `wrong.example.com` upstream.
+
 resource "bowtie_dns" "example" {
   name = "example.com"
   servers = [{
@@ -29,36 +32,36 @@ resource "bowtie_dns" "example" {
 
 ### Required
 
-- `name` (String) The DNS zone name you wish to target
-- `servers` (Attributes List) Provider Metadata storing extra API data about the server settings (see [below for nested schema](#nestedatt--servers))
+- `name` (String) The DNS zone name you wish to target. Example: `example.com`
+- `servers` (Attributes List) Provider Metadata storing extra API data about the upstream servers for this domain (see [below for nested schema](#nestedatt--servers))
 
 ### Optional
 
-- `excludes` (Attributes List) (see [below for nested schema](#nestedatt--excludes))
-- `include_only_sites` (List of String) The sites you only want this dns to be responsible for
-- `is_counted` (Boolean) Is Counted var
-- `is_dns64` (Boolean) Is Counted var
-- `is_drop_a` (Boolean) Whether to drop the A record or not
-- `is_drop_all` (Boolean) Should all records be dropped
-- `is_log` (Boolean) Is Log Var
-- `is_search_domain` (Boolean) should be treated as a search domain
+- `excludes` (Attributes List) Names under this domain to exclude from resolution. (see [below for nested schema](#nestedatt--excludes))
+- `include_only_sites` (List of String) Limit name resolution for this domain only to these sites.
+- `is_counted` (Boolean) Whether to only log metrics for this domain and not all requests.
+- `is_dns64` (Boolean) Whether to resolve names using DNS64.
+- `is_drop_a` (Boolean) Whether to drop A record responses from requests for this domain.
+- `is_drop_all` (Boolean) Whether all record responses for this domain should be dropped.
+- `is_log` (Boolean) Whether to log all requests for names in this domain.
+- `is_search_domain` (Boolean) Whether this domain should be treated as a search domain.
 
 ### Read-Only
 
-- `id` (String) The ID of the dns settings
-- `last_updated` (String) Metadata about the last time a write api was called by this provider for this resource
+- `id` (String) Internal resource ID.
+- `last_updated` (String) Metadata about the last time a write API was called by this provider for this resource.
 
 <a id="nestedatt--servers"></a>
 ### Nested Schema for `servers`
 
 Required:
 
-- `addr` (String) The IP address for this dns server
+- `addr` (String) The IP address for this DNS server.
 
 Read-Only:
 
-- `id` (String) The bowtie ID for this dns server
-- `order` (Number) The order for this dns server
+- `id` (String) Internal resource ID.
+- `order` (Number) The order for this DNS server.
 
 
 <a id="nestedatt--excludes"></a>
@@ -66,12 +69,12 @@ Read-Only:
 
 Required:
 
-- `name` (String)
+- `name` (String) Name to exclude sending to the upstream server for resolution.
 
 Read-Only:
 
-- `id` (String)
-- `order` (Number)
+- `id` (String) Internal resource ID.
+- `order` (Number) Order when presented with other excluded names in the web interface
 
 ## Import
 

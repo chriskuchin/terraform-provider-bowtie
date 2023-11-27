@@ -38,21 +38,22 @@ func (g *groupResource) Metadata(ctx context.Context, req resource.MetadataReque
 
 func (g *groupResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "A user group used to assign policies for access to groups of users",
+		MarkdownDescription: "Manage user groups which assign access policies to groups of users.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:            true,
-				MarkdownDescription: "The group identifier",
+				MarkdownDescription: "Internal resource ID.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"last_updated": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				MarkdownDescription: "Metadata about the last time a write API was called by this provider for this resource.",
 			},
 			"name": schema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "The name of the group",
+				MarkdownDescription: "The human-readable name of the group.",
 			},
 		},
 	}

@@ -3,18 +3,22 @@
 page_title: "bowtie_site Resource - terraform-provider-bowtie"
 subcategory: ""
 description: |-
-  Represents a bowtie site.
+  Represents a Bowtie site, or a discrete network location such as a datacenter or public cloud region.
+  If you are managing pre-existing sites, you may wish to import sites as outlined in the import section.
 ---
 
 # bowtie_site (Resource)
 
-Represents a bowtie site.
+Represents a Bowtie *site*, or a discrete network location such as a datacenter or public cloud region.
+
+If you are managing pre-existing sites, you may wish to import sites as outlined in the [import](#import) section.
 
 ## Example Usage
 
 ```terraform
+# Create a new site named "Corporate"
 resource "bowtie_site" "corp" {
-  name = "corporate"
+  name = "Corporate"
 }
 ```
 
@@ -23,11 +27,11 @@ resource "bowtie_site" "corp" {
 
 ### Required
 
-- `name` (String) The name of the site that will be displayed in the control plan ui.
+- `name` (String) The human readable name of the site.
 
 ### Read-Only
 
-- `id` (String) The unique id for the site as represented in the bowtie api.
+- `id` (String) Internal resource ID.
 - `last_updated` (String) The last time this object was updated using terraform. _Not part of the api_ just a piece of provider metadata.
 
 ## Import

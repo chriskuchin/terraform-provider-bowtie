@@ -14,7 +14,7 @@ Used to set the membership of a group. Will remove any users not represented in 
 
 ```terraform
 resource "bowtie_group" "admins" {
-  name = "admins"
+  name = "Administrators"
 }
 
 resource "bowtie_group_membership" "admin_memberships" {
@@ -31,8 +31,8 @@ resource "bowtie_group_membership" "admin_memberships" {
 
 ### Required
 
-- `group_id` (String) The group id to manage membership for.
-- `users` (List of String) The list of users to grant membership to the group. This resource accepts both user_ids and emails. Will completely overwrite memebership on apply.
+- `group_id` (String) Internal resource ID.
+- `users` (List of String) The list of users to grant membership to the group. This resource accepts both `user_ids` and emails. Will completely overwrite membership on apply.
 
 ## Import
 

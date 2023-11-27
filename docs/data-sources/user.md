@@ -3,12 +3,12 @@
 page_title: "bowtie_user Data Source - terraform-provider-bowtie"
 subcategory: ""
 description: |-
-  
+  Reference user information retrieved from the user account API.
 ---
 
 # bowtie_user (Data Source)
 
-
+Reference user information retrieved from the user account API.
 
 ## Example Usage
 
@@ -23,14 +23,14 @@ data "bowtie_user" "admin" {
 
 ### Required
 
-- `email` (String)
+- `email` (String) Identifying login address.
 
 ### Read-Only
 
-- `authz_control_plane` (Boolean)
-- `authz_devices` (Boolean)
-- `authz_policies` (Boolean)
-- `authz_users` (Boolean)
-- `id` (String) The ID of this resource.
-- `name` (String)
-- `status` (String)
+- `authz_control_plane` (Boolean) Whether the given user is authorized to administer an organization's control plane configuration.
+- `authz_devices` (Boolean) Whether the given user is authorized to administer organization devices.
+- `authz_policies` (Boolean) Whether the given user is authorized to administer organization policies.
+- `authz_users` (Boolean) Whether the given user is authorized to update an organization's users.
+- `id` (String) Internal resource ID.
+- `name` (String) The given name for a user.
+- `status` (String) Represents the user's current system state. Can be `active` or `disabled`.

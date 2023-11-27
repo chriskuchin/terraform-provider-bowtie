@@ -3,33 +3,39 @@
 page_title: "bowtie_site_range Resource - terraform-provider-bowtie"
 subcategory: ""
 description: |-
-  
+  Site ranges declare which addresses, if any, a given site is capable of serving.
+  A given site may be associated with more than one range.
 ---
 
 # bowtie_site_range (Resource)
 
+Site *ranges* declare which addresses, if any, a given site is capable of serving.
 
+A given site may be associated with more than one range.
 
 ## Example Usage
 
 ```terraform
+# Create a new site named "Corporate"
 resource "bowtie_site" "corp" {
-  name = "corporate"
+  name = "Corporate"
 }
 
+# Associate the CIDR range 10.0.0.0/16 with the `corp` site:
 resource "bowtie_site_range" "office" {
   site_id = bowtie_site.corp.id
 
-  name        = "office"
-  description = "the office internal network range"
+  name        = "Office"
+  description = "The office internal network range"
   ipv4_range  = "10.0.0.0/16"
 }
 
+# Associate a datacenter IPv6 range with the site as well:
 resource "bowtie_site_range" "dc_v6" {
   site_id = bowtie_site.corp.id
 
-  name        = "datacenter"
-  description = "the office internal network range"
+  name        = "Datacenter"
+  description = "The datacenter internal network range"
   ipv6_range  = "64:ff9b:1::/48"
 }
 ```
@@ -39,21 +45,21 @@ resource "bowtie_site_range" "dc_v6" {
 
 ### Required
 
-- `name` (String) The name of this range.
-- `site_id` (String) The Site id that this range should be associated with.
+- `name` (String) The human readable name of this range.
+- `site_id` (String) The Site ID that this range should be associated with.
 
 ### Optional
 
-- `description` (String) The description of what this range is.
-- `ipv4_range` (String) The IPv4 CIDR range for this site range. **Mutually exlcusive with `ipv6_range`**
-- `ipv6_range` (String) The IPv6 CIDR range for this site range. **Mutually exlcusive with `ipv4_range`**
+- `description` (String) Long-form description for this site.
+- `ipv4_range` (String) The IPv4 CIDR range for this site range. **Mutually exclusive with `ipv6_range`**.
+- `ipv6_range` (String) The IPv6 CIDR range for this site range. **Mutually exclusive with `ipv4_range`**.
 
 ### Read-Only
 
-- `id` (String) The unique ID from the api for this site range.
-- `last_updated` (String) Provider metadata for when the last update was performed via terraform for this resource.
-- `metric` (Number) The metric for this range
-- `weight` (Number) The weight for this range.
+- `id` (String) Internal resource ID.
+- `last_updated` (String) Provider metadata for when the last update was performed via Terraform for this resource.
+- `metric` (Number) The metric for this range. Currently unused but may be in future updates.
+- `weight` (Number) The weight for this range. Currently unused but may be in future updates.
 
 ## Import
 

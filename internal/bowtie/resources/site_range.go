@@ -47,49 +47,53 @@ func (sr *siteRangeResource) Metadata(ctx context.Context, req resource.Metadata
 
 func (sr *siteRangeResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "",
+		MarkdownDescription: `
+Site *ranges* declare which addresses, if any, a given site is capable of serving.
+
+A given site may be associated with more than one range.
+`,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:            true,
-				MarkdownDescription: "The unique ID from the api for this site range.",
+				MarkdownDescription: "Internal resource ID.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"last_updated": schema.StringAttribute{
 				Computed:            true,
-				MarkdownDescription: "Provider metadata for when the last update was performed via terraform for this resource.",
+				MarkdownDescription: "Provider metadata for when the last update was performed via Terraform for this resource.",
 			},
 			"site_id": schema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "The Site id that this range should be associated with.",
+				MarkdownDescription: "The Site ID that this range should be associated with.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"name": schema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "The name of this range.",
+				MarkdownDescription: "The human readable name of this range.",
 			},
 			"description": schema.StringAttribute{
 				Optional:            true,
-				MarkdownDescription: "The description of what this range is.",
+				MarkdownDescription: "Long-form description for this site.",
 			},
 			"ipv4_range": schema.StringAttribute{
-				MarkdownDescription: "The IPv4 CIDR range for this site range. **Mutually exlcusive with `ipv6_range`**",
+				MarkdownDescription: "The IPv4 CIDR range for this site range. **Mutually exclusive with `ipv6_range`**.",
 				Optional:            true,
 			},
 			"ipv6_range": schema.StringAttribute{
-				MarkdownDescription: "The IPv6 CIDR range for this site range. **Mutually exlcusive with `ipv4_range`**",
+				MarkdownDescription: "The IPv6 CIDR range for this site range. **Mutually exclusive with `ipv4_range`**.",
 				Optional:            true,
 			},
 			"weight": schema.Int64Attribute{
-				MarkdownDescription: "The weight for this range.",
+				MarkdownDescription: "The weight for this range. Currently unused but may be in future updates.",
 				Computed:            true,
 				Default:             int64default.StaticInt64(0),
 			},
 			"metric": schema.Int64Attribute{
-				MarkdownDescription: "The metric for this range",
+				MarkdownDescription: "The metric for this range. Currently unused but may be in future updates.",
 				Computed:            true,
 				Default:             int64default.StaticInt64(0),
 			},

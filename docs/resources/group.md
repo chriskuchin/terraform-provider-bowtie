@@ -3,18 +3,18 @@
 page_title: "bowtie_group Resource - terraform-provider-bowtie"
 subcategory: ""
 description: |-
-  A user group used to assign policies for access to groups of users
+  Manage user groups which assign access policies to groups of users.
 ---
 
 # bowtie_group (Resource)
 
-A user group used to assign policies for access to groups of users
+Manage user groups which assign access policies to groups of users.
 
 ## Example Usage
 
 ```terraform
 resource "bowtie_group" "admins" {
-  name = "admins"
+  name = "Administrators"
 }
 ```
 
@@ -23,12 +23,12 @@ resource "bowtie_group" "admins" {
 
 ### Required
 
-- `name` (String) The name of the group
+- `name` (String) The human-readable name of the group.
 
 ### Read-Only
 
-- `id` (String) The group identifier
-- `last_updated` (String)
+- `id` (String) Internal resource ID.
+- `last_updated` (String) Metadata about the last time a write API was called by this provider for this resource.
 
 ## Import
 

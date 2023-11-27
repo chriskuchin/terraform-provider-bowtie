@@ -39,16 +39,16 @@ func (rg *resourceGroupResource) Metadata(ctx context.Context, req resource.Meta
 
 func (rg *resourceGroupResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "",
+		MarkdownDescription: "Group *resources* into *resource groups* which may be then targeted by *policies*. A resource can be thought of as an internal property, like a private wiki. Resource groups collects many private network resources into a group like 'Internal Tools' that may be access-controlled with a policy.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				MarkdownDescription: "The id for the resource group in the api",
+				MarkdownDescription: "Internal resource ID.",
 				Computed:            true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				}},
 			"name": schema.StringAttribute{
-				MarkdownDescription: "The human readable name/description of the resource group",
+				MarkdownDescription: "The human readable name/description of the resource group.",
 				Required:            true,
 			},
 			"inherited": schema.ListAttribute{

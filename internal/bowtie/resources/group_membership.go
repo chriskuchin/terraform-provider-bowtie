@@ -40,7 +40,7 @@ func (g *GroupMembershipResource) Schema(ctx context.Context, req resource.Schem
 		Attributes: map[string]schema.Attribute{
 			"group_id": schema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "The group id to manage membership for.",
+				MarkdownDescription: "Internal resource ID.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -48,7 +48,7 @@ func (g *GroupMembershipResource) Schema(ctx context.Context, req resource.Schem
 			"users": schema.ListAttribute{
 				ElementType:         types.StringType,
 				Required:            true,
-				MarkdownDescription: "The list of users to grant membership to the group. This resource accepts both user_ids and emails. Will completely overwrite memebership on apply.",
+				MarkdownDescription: "The list of users to grant membership to the group. This resource accepts both `user_ids` and emails. Will completely overwrite membership on apply.",
 			},
 		},
 	}

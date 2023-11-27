@@ -53,32 +53,35 @@ func (r *resourceResource) Metadata(ctx context.Context, req resource.MetadataRe
 
 func (r *resourceResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Resource object for use in access policies to grant access to resources in your network",
+		MarkdownDescription: `
+Bowtie *resources* represent network properties like address ranges that may be targeted by *policies*.
+
+Note that defining these resources does not implicitly grant or deny access to them - resources must be collected into resource groups and then referenced by policies.`,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				MarkdownDescription: "The bowtie api id for the resource.",
+				MarkdownDescription: "Internal resource ID.",
 				Computed:            true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"name": schema.StringAttribute{
-				MarkdownDescription: "Human readable name of the resource so users can identify what it is.",
+				MarkdownDescription: "Human readable name of the resource.",
 				Required:            true,
 			},
 			"protocol": schema.StringAttribute{
-				MarkdownDescription: "The connection protocol to allow connection using.",
+				MarkdownDescription: "Matching connection protocol.",
 				Validators: []validator.String{
 					stringvalidator.OneOf("all", "tcp", "udp", "http", "https", "icmp4", "icmp6"),
 				},
 				Required: true,
 			},
 			"location": schema.SingleNestedAttribute{
-				MarkdownDescription: "The address of the resource you are permissioning. Can be a CIDR, or single IP or DNS address.",
+				MarkdownDescription: "The address of the resource. May be a CIDR address, single IP, or DNS name.",
 				Required:            true,
 				Attributes: map[string]schema.Attribute{
 					"ip": schema.StringAttribute{
-						MarkdownDescription: "The IP address of a resource behind your bowtie gateway.",
+						MarkdownDescription: "The IP address of a resource reachable from behind your Bowtie Controller.",
 						Optional:            true,
 						Validators: []validator.String{
 							stringvalidator.ExactlyOneOf(path.Expressions{
@@ -88,21 +91,21 @@ func (r *resourceResource) Schema(ctx context.Context, req resource.SchemaReques
 						},
 					},
 					"cidr": schema.StringAttribute{
-						MarkdownDescription: "A CIDR behind your bowtie gateway",
+						MarkdownDescription: "A CIDR address reachable from behind your Bowtie Controller.",
 						Optional:            true,
 					},
 					"dns": schema.StringAttribute{
-						MarkdownDescription: "A DNS address pointing to a resource behind your bowtie gateway",
+						MarkdownDescription: "A DNS name pointing to a resource reachable from behind your Bowtie Controller.",
 						Optional:            true,
 					},
 				},
 			},
 			"ports": schema.SingleNestedAttribute{
-				MarkdownDescription: "",
+				MarkdownDescription: "Which ports to include in this resource.",
 				Required:            true,
 				Attributes: map[string]schema.Attribute{
 					"range": schema.ListAttribute{
-						MarkdownDescription: "First entry is the low port and second is high and all ports between the 2 inclusive are accessible",
+						MarkdownDescription: "First element is the low port and second is the high port (range is inclusive).",
 						ElementType:         types.Int64Type,
 						Validators: []validator.List{
 							listvalidator.SizeAtMost(2),
@@ -114,7 +117,7 @@ func (r *resourceResource) Schema(ctx context.Context, req resource.SchemaReques
 						Optional: true,
 					},
 					"collection": schema.ListAttribute{
-						MarkdownDescription: "List of allowed access ports",
+						MarkdownDescription: "List of allowed ports.",
 						ElementType:         types.Int64Type,
 						Validators: []validator.List{
 							listvalidator.UniqueValues(),

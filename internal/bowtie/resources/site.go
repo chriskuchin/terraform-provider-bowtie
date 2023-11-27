@@ -37,11 +37,15 @@ func (s *siteResource) Metadata(ctx context.Context, req resource.MetadataReques
 
 func (s *siteResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Represents a bowtie site.",
+		MarkdownDescription: `
+Represents a Bowtie *site*, or a discrete network location such as a datacenter or public cloud region.
+
+If you are managing pre-existing sites, you may wish to import sites as outlined in the [import](#import) section.
+`,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:            true,
-				MarkdownDescription: "The unique id for the site as represented in the bowtie api.",
+				MarkdownDescription: "Internal resource ID.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
@@ -52,7 +56,7 @@ func (s *siteResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 			},
 			"name": schema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "The name of the site that will be displayed in the control plan ui.",
+				MarkdownDescription: "The human readable name of the site.",
 			},
 		},
 	}
