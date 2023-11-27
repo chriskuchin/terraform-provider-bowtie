@@ -146,19 +146,6 @@ func (d *dnsResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 				Computed:            true,
 				MarkdownDescription: "should be treated as a search domain",
 			},
-			// "excludes": schema.ObjectAttribute{
-			// 	MarkdownDescription: "Provider Metadata storing extra API information about the exclude settings",
-			// 	AttributeTypes: map[string]attr.Type{
-			// 		"id":    types.StringType,
-			// 		"name":  types.StringType,
-			// 		"order": types.Int64Type,
-			// 	},
-			// 	Computed: true,
-			// 	Optional: true,
-			// 	PlanModifiers: []planmodifier.Object{
-			// 		objectplanmodifier.UseStateForUnknown(),
-			// 	},
-			// },
 			"excludes": schema.ListNestedAttribute{
 				Optional: true,
 				NestedObject: schema.NestedAttributeObject{
@@ -346,8 +333,6 @@ func (d *dnsResource) Update(ctx context.Context, req resource.UpdateRequest, re
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	// servers := mergeServerDetails(plan.Servers, )
 
 	var servers []client.Server = []client.Server{}
 	for _, server := range plan.Servers {
