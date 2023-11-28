@@ -29,18 +29,23 @@ func New() provider.Provider {
 
 func (b *BowtieProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Bowtie Provider",
+		MarkdownDescription: `The Bowtie provider for Terraform configures your Bowtie installation via native Terraform resources instead of the Controller web interface. Use the provider to declaratively manage API resources such as resource groups, DNS resources, user groups, and more.
+
+Note that you must configure appropriate credentials to authenticate with the Bowtie API before you can use this provider.
+
+For more documentation about installing and configuring Bowtie, refer to the official [Bowtie documentation](https://docs.bowtie.works/).
+`,
 		Attributes: map[string]schema.Attribute{
 			"host": schema.StringAttribute{
-				Description: "The url to communicate with the bowtie control plane at example: https://bowtie.example.com",
+				Description: "The Bowtie HTTP Controller endpoint. Honors the `BOWTIE_HOST` environment variable if set. Example: `https://bowtie.example.com`",
 				Optional:    true,
 			},
 			"username": schema.StringAttribute{
-				Description: "The username/email to login to the bowtie control plane",
+				Description: "Administrator username/email login credentials. Honors the `BOWTIE_USERNAME` environment variable if set",
 				Optional:    true,
 			},
 			"password": schema.StringAttribute{
-				Description: "The password to login to the bowtie control plane",
+				Description: "Administrator password login credentials. Honors the `BOWTIE_PASSWORD` environment variable if set",
 				Sensitive:   true,
 				Optional:    true,
 			},

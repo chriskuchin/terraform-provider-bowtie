@@ -3,12 +3,15 @@
 page_title: "bowtie_resource Resource - terraform-provider-bowtie"
 subcategory: ""
 description: |-
-  Resource object for use in access policies to grant access to resources in your network
+  Bowtie resources represent network properties like address ranges that may be targeted by policies.
+  Note that defining these resources does not implicitly grant or deny access to them - resources must be collected into resource groups and then referenced by policies.
 ---
 
 # bowtie_resource (Resource)
 
-Resource object for use in access policies to grant access to resources in your network
+Bowtie *resources* represent network properties like address ranges that may be targeted by *policies*.
+
+Note that defining these resources does not implicitly grant or deny access to them - resources must be collected into resource groups and then referenced by policies.
 
 ## Example Usage
 
@@ -78,23 +81,23 @@ resource "bowtie_resource" "all_ipv4" {
 
 ### Required
 
-- `location` (Attributes) The address of the resource you are permissioning. Can be a CIDR, or single IP or DNS address. (see [below for nested schema](#nestedatt--location))
-- `name` (String) Human readable name of the resource so users can identify what it is.
-- `ports` (Attributes) (see [below for nested schema](#nestedatt--ports))
-- `protocol` (String) The connection protocol to allow connection using.
+- `location` (Attributes) The address of the resource. May be a CIDR address, single IP, or DNS name. (see [below for nested schema](#nestedatt--location))
+- `name` (String) Human readable name of the resource.
+- `ports` (Attributes) Which ports to include in this resource. (see [below for nested schema](#nestedatt--ports))
+- `protocol` (String) Matching connection protocol.
 
 ### Read-Only
 
-- `id` (String) The bowtie api id for the resource.
+- `id` (String) Internal resource ID.
 
 <a id="nestedatt--location"></a>
 ### Nested Schema for `location`
 
 Optional:
 
-- `cidr` (String) A CIDR behind your bowtie gateway
-- `dns` (String) A DNS address pointing to a resource behind your bowtie gateway
-- `ip` (String) The IP address of a resource behind your bowtie gateway.
+- `cidr` (String) A CIDR address reachable from behind your Bowtie Controller.
+- `dns` (String) A DNS name pointing to a resource reachable from behind your Bowtie Controller.
+- `ip` (String) The IP address of a resource reachable from behind your Bowtie Controller.
 
 
 <a id="nestedatt--ports"></a>
@@ -102,8 +105,8 @@ Optional:
 
 Optional:
 
-- `collection` (List of Number) List of allowed access ports
-- `range` (List of Number) First entry is the low port and second is high and all ports between the 2 inclusive are accessible
+- `collection` (List of Number) List of allowed ports.
+- `range` (List of Number) First element is the low port and second is the high port (range is inclusive).
 
 ## Import
 

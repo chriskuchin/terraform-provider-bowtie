@@ -12,6 +12,23 @@ help:
 generate:
 	go generate ./...
 
+# Ensure documentation is up-to-date
+stale-docs: generate
+	#!/usr/bin/env bash
+
+	if git diff --no-ext-diff --quiet --exit-code docs
+	then
+		echo "Documentation is up-to-date"
+	else
+		echo -e "\n[ ! ] Documentation is out-of-date with source.\n"
+		echo "Regenerate and commit updated docs with 'just generate'."
+		exit 1
+	fi
+
+# Perform documentation checks
+stylecheck: generate
+	vale docs
+
 # Run the tests
 test:
 	go test -v ./... -count=1
@@ -19,7 +36,11 @@ test:
 # Run all tests, including acceptance tests
 acceptance-test: container
 	#!/usr/bin/env bash
+	# Ensure the container has had time to come up
+	sleep 5
+	# Run the tests
 	TF_ACC=1 just test
+	# Shut down the container
 	just stop-container || true
 
 # Generate a SITE_ID for the test container in config.env

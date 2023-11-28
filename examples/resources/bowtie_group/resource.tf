@@ -1,3 +1,3 @@
 resource "bowtie_group" "admins" {
-  name = "admins"
+  name = "Administrators"
 }

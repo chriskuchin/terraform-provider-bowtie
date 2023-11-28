@@ -40,30 +40,41 @@ func (u *userDataSource) Metadata(_ context.Context, req datasource.MetadataRequ
 
 func (u *userDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		MarkdownDescription: `
+Reference user information retrieved from the user account API.
+`,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				MarkdownDescription: "Internal resource ID.",
 			},
 			"name": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				MarkdownDescription: "The given name for a user.",
 			},
 			"email": schema.StringAttribute{
-				Required: true,
+				Required:            true,
+				MarkdownDescription: "Identifying login address.",
 			},
 			"authz_devices": schema.BoolAttribute{
-				Computed: true,
+				Computed:            true,
+				MarkdownDescription: "Whether the given user is authorized to administer organization devices.",
 			},
 			"authz_policies": schema.BoolAttribute{
-				Computed: true,
+				Computed:            true,
+				MarkdownDescription: "Whether the given user is authorized to administer organization policies.",
 			},
 			"authz_control_plane": schema.BoolAttribute{
-				Computed: true,
+				Computed:            true,
+				MarkdownDescription: "Whether the given user is authorized to administer an organization's control plane configuration.",
 			},
 			"authz_users": schema.BoolAttribute{
-				Computed: true,
+				Computed:            true,
+				MarkdownDescription: "Whether the given user is authorized to update an organization's users.",
 			},
 			"status": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				MarkdownDescription: "Represents the user's current system state. Can be `active` or `disabled`.",
 			},
 		},
 	}

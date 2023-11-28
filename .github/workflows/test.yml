@@ -1,4 +1,4 @@
-name: Test
+name: Test Suite
 
 on:
   workflow_dispatch:
@@ -7,45 +7,48 @@ on:
     branches: [ main ]
     paths-ignore:
       - 'README.md'
-      - 'docs/*'
   push:
     branches: [ main ]
     paths-ignore:
       - 'README.md'
-      - 'docs/*'
 
 jobs:
 
-  acceptance:
-    name: Acceptance Testing
+  docs-sync:
+    name: Ensure that the user documentation is in-sync
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/actions/bootstrap
+    - run: nix develop . --command just stale-docs
 
-    - name: Check out the repository
-      uses: actions/checkout@v4
+  docs-style:
+    name: Run style and spelling checks against user documentation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/actions/bootstrap
+    - run: nix develop . --command just stylecheck
 
-    - name: Install nix
-      uses: DeterminateSystems/nix-installer-action@main
+  acceptance:
+    name: Run the provider tests including acceptance tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/actions/bootstrap
+    - run: nix develop . --command just acceptance-test
 
-    - name: Setup nix caching
-      uses: DeterminateSystems/magic-nix-cache-action@main
-
-    - name: Run linters
+  lint:
+    name: Perform go linting checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/actions/bootstrap
+    - name: Run golangci-lint
       uses: golangci/golangci-lint-action@v3.7.0
       with:
         version: latest
-
-    - name: Generate user documentation
-      run: nix develop . --command just generate
-
-    - name: Confirm no stale user documentation
-      run: |
-        git diff --compact-summary --exit-code || \
-          (echo "*** Unexpected differences after code generation. Run 'just generate' and commit."; exit 1)
-
-    - name: Create container
-      run: nix develop . --command just container
-
-    - name: Run test suite
-      run: nix develop . --command just acceptance-test
