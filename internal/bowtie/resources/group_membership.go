@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-	"sort"
 
 	"github.com/bowtieworks/terraform-provider-bowtie/internal/bowtie/client"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -23,7 +22,7 @@ type GroupMembershipResource struct {
 
 type groupMembershipResourceModel struct {
 	GroupID types.String `tfsdk:"group_id"`
-	Users   types.List   `tfsdk:"users"`
+	Users   types.Set    `tfsdk:"users"`
 }
 
 func NewGroupMembershipResource() resource.Resource {
@@ -45,7 +44,7 @@ func (g *GroupMembershipResource) Schema(ctx context.Context, req resource.Schem
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
-			"users": schema.ListAttribute{
+			"users": schema.SetAttribute{
 				ElementType:         types.StringType,
 				Required:            true,
 				MarkdownDescription: "The list of users to grant membership to the group. This resource accepts both `user_ids` and emails. Will completely overwrite membership on apply.",
@@ -111,8 +110,7 @@ func (g *GroupMembershipResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	sort.Strings(groupInfo.Users)
-	stateUsers, diags := types.ListValueFrom(ctx, types.StringType, groupInfo.Users)
+	stateUsers, diags := types.SetValueFrom(ctx, types.StringType, groupInfo.Users)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -145,6 +143,13 @@ func (g *GroupMembershipResource) Update(ctx context.Context, req resource.Updat
 		return
 	}
 
+	stateUsers, diags := types.SetValueFrom(ctx, types.StringType, users)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	plan.Users = stateUsers
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 
 }
