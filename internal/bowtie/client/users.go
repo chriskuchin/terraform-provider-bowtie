@@ -79,8 +79,7 @@ func (c *Client) DeleteUser(ctx context.Context, id string) error {
 		return err
 	}
 
-	body, err := c.doRequest(req)
-	fmt.Printf("%s", body)
+	_, err = c.doRequest(req)
 	return err
 }
 
