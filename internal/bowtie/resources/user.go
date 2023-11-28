@@ -71,7 +71,7 @@ func (u *UserResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 				PlanModifiers: []planmodifier.Bool{
 					boolplanmodifier.UseStateForUnknown(),
 				},
-				MarkdownDescription: "Grants the user access to the Devices UI and APIs.",
+				MarkdownDescription: "Grants the user access to the Devices UI and API.",
 			},
 			"authz_policies": schema.BoolAttribute{
 				Computed: true,
@@ -80,7 +80,7 @@ func (u *UserResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 				PlanModifiers: []planmodifier.Bool{
 					boolplanmodifier.UseStateForUnknown(),
 				},
-				MarkdownDescription: "Grants the user access to the Policies UI and APIs.",
+				MarkdownDescription: "Grants the user access to the Policies UI and API.",
 			},
 			"authz_users": schema.BoolAttribute{
 				Computed: true,
@@ -89,7 +89,7 @@ func (u *UserResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 				PlanModifiers: []planmodifier.Bool{
 					boolplanmodifier.UseStateForUnknown(),
 				},
-				MarkdownDescription: "Grants the user access to the Users UI and APIs.",
+				MarkdownDescription: "Grants the user access to the Users UI and API.",
 			},
 			"authz_control_plane": schema.BoolAttribute{
 				Computed: true,
@@ -98,7 +98,7 @@ func (u *UserResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 				PlanModifiers: []planmodifier.Bool{
 					boolplanmodifier.UseStateForUnknown(),
 				},
-				MarkdownDescription: "Grants the user access to the Control Plane UI and APIs.",
+				MarkdownDescription: "Grants the user access to the Control Plane UI and API.",
 			},
 			"role": schema.StringAttribute{
 				Computed:            true,
