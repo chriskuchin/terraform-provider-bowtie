@@ -161,6 +161,7 @@ func (b *BowtieProvider) Resources(_ context.Context) []func() resource.Resource
 		resources.NewResourceResource,
 		resources.NewResourceGroupResource,
 		resources.NewGroupMembershipResource,
+		resources.NewUserResource,
 	}
 }
 

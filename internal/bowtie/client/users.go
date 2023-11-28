@@ -8,18 +8,20 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 type BowtieUser struct {
 	ID                string `json:"id"`
-	Name              string `json:"name"`
-	Email             string `json:"email"`
-	AuthzDevices      bool   `json:"authz_devices"`
-	AuthzPolicies     bool   `json:"authz_policies"`
-	AuthzControlPanel bool   `json:"authz_control_plane"`
-	AuthzUsers        bool   `json:"authz_users"`
-	Status            string `json:"status"`
+	Name              string `json:"name,omitempty"`
+	Email             string `json:"email,omitempty"`
+	AuthzDevices      bool   `json:"authz_devices,omitempty"`
+	AuthzPolicies     bool   `json:"authz_policies,omitempty"`
+	AuthzControlPlane bool   `json:"authz_control_plane,omitempty"`
+	AuthzUsers        bool   `json:"authz_users,omitempty"`
+	Status            string `json:"status,omitempty"`
+	Role              string `json:"role,omitempty"`
 }
 
 func (c *Client) GetUsers() (map[string]BowtieUser, error) {
@@ -55,17 +57,34 @@ func (c *Client) GetUserByEmail(ctx context.Context, email string) (BowtieUser, 
 	return BowtieUser{}, fmt.Errorf("user not found")
 }
 
-func (c *Client) DeleteUser(id string) error {
+func (c *Client) GetUser(ctx context.Context, id string) (BowtieUser, error) {
+	req, err := http.NewRequest(http.MethodGet, c.getHostURL(fmt.Sprintf("/user/%s", id)), nil)
+	if err != nil {
+		return BowtieUser{}, nil
+	}
+
+	body, err := c.doRequest(req)
+	if err != nil {
+		return BowtieUser{}, err
+	}
+
+	var user BowtieUser = BowtieUser{}
+	err = json.Unmarshal(body, &user)
+	return user, err
+}
+
+func (c *Client) DeleteUser(ctx context.Context, id string) error {
 	req, err := http.NewRequest(http.MethodDelete, c.getHostURL(fmt.Sprintf("/user/%s", id)), nil)
 	if err != nil {
 		return err
 	}
 
-	_, err = c.doRequest(req)
+	body, err := c.doRequest(req)
+	fmt.Printf("%s", body)
 	return err
 }
 
-func (c *Client) DisableUser(id string) error {
+func (c *Client) DisableUser(ctx context.Context, id string) error {
 	payload := BowtieUser{
 		Status: "Disabled",
 		ID:     id,
@@ -83,4 +102,40 @@ func (c *Client) DisableUser(id string) error {
 
 	_, err = c.doRequest(req)
 	return err
+}
+
+func (c *Client) CreateUser(ctx context.Context, name, email, role string, authzPolicies, authzUsers, authzControlPlane, authzDevices, enabled bool) (string, error) {
+	id := uuid.NewString()
+	return c.UpsertUser(ctx, id, name, email, role, authzPolicies, authzUsers, authzControlPlane, authzDevices, enabled)
+}
+
+func (c *Client) UpsertUser(ctx context.Context, id, name, email, role string, authzPolicies, authzUsers, authzControlPlane, authzDevices, enabled bool) (string, error) {
+	payload := BowtieUser{
+		ID:                id,
+		Name:              name,
+		Email:             email,
+		AuthzDevices:      authzDevices,
+		AuthzPolicies:     authzPolicies,
+		AuthzControlPlane: authzControlPlane,
+		AuthzUsers:        authzUsers,
+		Role:              role,
+		Status:            "Active",
+	}
+
+	if !enabled {
+		payload.Status = "Disabled"
+	}
+
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return "", err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, c.getHostURL("/user/upsert"), bytes.NewBuffer(body))
+	if err != nil {
+		return "", err
+	}
+
+	_, err = c.doRequest(req)
+	return id, err
 }

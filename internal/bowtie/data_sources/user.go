@@ -29,7 +29,7 @@ type userModel struct {
 	Email             types.String `tfsdk:"email"`
 	AuthzDevices      types.Bool   `tfsdk:"authz_devices"`
 	AuthzPolicies     types.Bool   `tfsdk:"authz_policies"`
-	AuthzControlPanel types.Bool   `tfsdk:"authz_control_plane"`
+	AuthzControlPlane types.Bool   `tfsdk:"authz_control_plane"`
 	AuthzUsers        types.Bool   `tfsdk:"authz_users"`
 	Status            types.String `tfsdk:"status"`
 }
@@ -113,7 +113,7 @@ func (u *userDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	state.Name = types.StringValue(user.Name)
 	state.Status = types.StringValue(user.Status)
 
-	state.AuthzControlPanel = types.BoolValue(user.AuthzControlPanel)
+	state.AuthzControlPlane = types.BoolValue(user.AuthzControlPlane)
 	state.AuthzDevices = types.BoolValue(user.AuthzDevices)
 	state.AuthzPolicies = types.BoolValue(user.AuthzPolicies)
 	state.AuthzUsers = types.BoolValue(user.AuthzUsers)

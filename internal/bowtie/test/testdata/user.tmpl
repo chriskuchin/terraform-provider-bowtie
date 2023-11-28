@@ -1,0 +1,16 @@
+{{ .provider }}
+resource "bowtie_user" "user" {
+  name = "{{ .name }}"
+  email = "{{ .email }}"
+
+{{ if ne .role "" }}
+  role = "{{.role}}"
+{{ end }}
+
+{{ if .authz }}
+  authz_devices = {{ .authz_devices }}
+  authz_policies = {{ .authz_policies }}
+  authz_control_plane = {{ .authz_control_plane }}
+  authz_users = {{ .authz_users }}
+{{ end }}
+}
