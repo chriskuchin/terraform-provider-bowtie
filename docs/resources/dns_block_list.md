@@ -19,11 +19,11 @@ Names may be given as upstream URLs which will be retrieved periodically.
 # Use a third-party DNS blocklist for content blocking:
 
 resource "bowtie_dns_block_list" "example" {
-  name              = "Infosec Block List"
-  upstream          = "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/domains/tif.txt"
-  override_to_allow = <<EOF
-permitted.example.com
-EOF
+  name     = "Infosec Block List"
+  upstream = "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/domains/tif.txt"
+  override_to_allow = [
+    "permitted.example.com"
+  ]
 }
 ```
 
@@ -36,7 +36,7 @@ EOF
 
 ### Optional
 
-- `override_to_allow` (String) Optional list of DNS names to exclude from any retrieved DNS block lists.
+- `override_to_allow` (List of String) Optional list of DNS names to exclude from any retrieved DNS block lists.
 - `upstream` (String) An upstream URL that returns a DNS block list.
 
 ### Read-Only
