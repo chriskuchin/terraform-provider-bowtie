@@ -3,6 +3,7 @@ package resources
 import (
 	"context"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/bowtieworks/terraform-provider-bowtie/internal/bowtie/client"
@@ -28,7 +29,7 @@ type dnsBlockListResourceModel struct {
 	Name            types.String `tfsdk:"name"`
 	LastUpdated     types.String `tfsdk:"last_updated"`
 	Upstream        types.String `tfsdk:"upstream"`
-	OverrideToAllow types.String `tfsdk:"override_to_allow"`
+	OverrideToAllow types.List   `tfsdk:"override_to_allow"`
 }
 
 func NewDNSBlockListResource() resource.Resource {
@@ -91,7 +92,8 @@ Names may be given as upstream URLs which will be retrieved periodically.
 					&urlValidator{},
 				},
 			},
-			"override_to_allow": schema.StringAttribute{
+			"override_to_allow": schema.ListAttribute{
+				ElementType:         types.StringType,
 				Optional:            true,
 				MarkdownDescription: "Optional list of DNS names to exclude from any retrieved DNS block lists.",
 			},
@@ -126,10 +128,16 @@ func (bl *dnsBlockListResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
+	overrides := []string{}
+	resp.Diagnostics.Append(plan.OverrideToAllow.ElementsAs(ctx, &overrides, false)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	id, err := bl.client.CreateDNSBlockList(
 		plan.Name.ValueString(),
 		plan.Upstream.ValueString(),
-		plan.OverrideToAllow.ValueString(),
+		strings.Join(overrides, "\n"),
 	)
 
 	if err != nil {
@@ -164,7 +172,15 @@ func (bl *dnsBlockListResource) Read(ctx context.Context, req resource.ReadReque
 
 	state.Name = types.StringValue(blocklist.Name)
 	state.Upstream = types.StringValue(blocklist.Upstream)
-	state.OverrideToAllow = types.StringValue(blocklist.OverrideToAllow)
+
+	overrides, diags := types.ListValueFrom(
+		ctx, types.StringType, strings.Split(blocklist.OverrideToAllow, "\n"),
+	)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	state.OverrideToAllow = overrides
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -177,11 +193,17 @@ func (bl *dnsBlockListResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
+	overrides := []string{}
+	resp.Diagnostics.Append(plan.OverrideToAllow.ElementsAs(ctx, &overrides, false)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	err := bl.client.UpsertDNSBlockList(
 		plan.ID.ValueString(),
 		plan.Name.ValueString(),
 		plan.Upstream.ValueString(),
-		plan.OverrideToAllow.ValueString(),
+		strings.Join(overrides, "\n"),
 	)
 	if err != nil {
 		resp.Diagnostics.AddError(
