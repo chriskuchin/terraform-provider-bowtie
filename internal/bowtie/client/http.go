@@ -24,7 +24,7 @@ type AuthPayload struct {
 
 const apiVersionPrefix = "/-net/api/v0"
 
-func NewClient(ctx context.Context, host, username, password string) (*Client, error) {
+func NewClient(ctx context.Context, host, username, password string, lazy_auth bool) (*Client, error) {
 	jar, err := cookiejar.New(nil)
 	if err != nil {
 		return nil, err
@@ -44,14 +44,24 @@ func NewClient(ctx context.Context, host, username, password string) (*Client, e
 		},
 	}
 
-	if err := c.Login(ctx); err != nil {
-		return nil, err
+	if !lazy_auth {
+		if err := c.Login(); err != nil {
+			return nil, err
+		}
 	}
 
 	return c, nil
 }
 
 func (c *Client) doRequest(req *http.Request) ([]byte, error) {
+	// Pre-flight check to ensure that login cookies are present:
+	if len(c.HTTPClient.Jar.Cookies(req.URL)) == 0 {
+		// Without any cookies for this URL, login first:
+		if err := c.Login(); err != nil {
+			return nil, err
+		}
+	}
+
 	if req.Method == http.MethodPost {
 		req.Header.Add("Content-Type", "application/json")
 	}
