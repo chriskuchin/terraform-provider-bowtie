@@ -59,7 +59,6 @@ func (v urlValidator) ValidateString(ctx context.Context, req validator.StringRe
 			"Value is not a valid URL: "+req.ConfigValue.String()+": "+err.Error(),
 		)
 	}
-	return
 }
 
 func (bl *dnsBlockListResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
