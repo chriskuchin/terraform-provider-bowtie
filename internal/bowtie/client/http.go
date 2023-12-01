@@ -7,14 +7,16 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"strings"
+	"sync"
 	"time"
 )
 
 type Client struct {
 	HTTPClient *http.Client
 
-	hostURL string
-	auth    AuthPayload
+	hostURL   string
+	auth      AuthPayload
+	authCheck sync.Mutex
 }
 
 type AuthPayload struct {
@@ -53,13 +55,27 @@ func NewClient(ctx context.Context, host, username, password string, lazy_auth b
 	return c, nil
 }
 
-func (c *Client) doRequest(req *http.Request) ([]byte, error) {
-	// Pre-flight check to ensure that login cookies are present:
+// Check that the client has a login cookie, and if not, authenticate
+func (c *Client) ensureAuth(req *http.Request) error {
+	// Wrapped in a mutex lock to ensure that we don’t spam auth
+	// requests in the event of parallel resources being checked.
+	c.authCheck.Lock()
+	defer c.authCheck.Unlock()
+
 	if len(c.HTTPClient.Jar.Cookies(req.URL)) == 0 {
 		// Without any cookies for this URL, login first:
 		if err := c.Login(); err != nil {
-			return nil, err
+			return err
 		}
+	}
+
+	return nil
+}
+
+func (c *Client) doRequest(req *http.Request) ([]byte, error) {
+	// Pre-flight check to ensure that login cookies are present.
+	if err := c.ensureAuth(req); err != nil {
+		return nil, err
 	}
 
 	if req.Method == http.MethodPost {
