@@ -17,7 +17,7 @@ func getBowtieClient(ctx context.Context, host string) (*client.Client, error) {
 	username := os.Getenv("BOWTIE_USERNAME")
 	password := os.Getenv("BOWTIE_PASSWORD")
 
-	c, err := client.NewClient(ctx, host, username, password)
+	c, err := client.NewClient(ctx, host, username, password, false)
 	return c, err
 
 }
