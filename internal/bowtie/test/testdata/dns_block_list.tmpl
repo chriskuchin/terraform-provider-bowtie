@@ -1,0 +1,12 @@
+{{ .provider }}
+
+resource "bowtie_dns_block_list" "{{ .resource }}" {
+    name = "{{ .name }}"
+    upstream = "{{ .upstream }}"
+
+    override_to_allow = [
+  {{- range $override := .overrides }}
+      "{{ $override }}",
+  {{ end -}}
+    ]
+}
