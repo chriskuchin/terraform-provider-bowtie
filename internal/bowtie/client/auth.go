@@ -1,7 +1,6 @@
 package client
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -24,7 +23,7 @@ type User struct {
 	Role              string `json:"role"`
 }
 
-func (c *Client) Login(ctx context.Context) error {
+func (c *Client) Login() error {
 	payload, err := json.Marshal(c.auth)
 	if err != nil {
 		return err
