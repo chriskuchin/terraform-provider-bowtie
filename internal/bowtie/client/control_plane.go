@@ -47,6 +47,13 @@ type DNS struct {
 	DNS64Exclude     map[string]DNSExclude `json:"dns64_exclude"`
 }
 
+type DNSBlockList struct {
+	ID              string `json:"id"`
+	Name            string `json:"name"`
+	Upstream        string `json:"upstream,omitempty"`
+	OverrideToAllow string `json:"override_to_allow"`
+}
+
 type Server struct {
 	ID    string `json:"id"`
 	Addr  string `json:"addr"`
