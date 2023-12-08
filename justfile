@@ -40,8 +40,13 @@ acceptance-test: container
 	sleep 5
 	# Run the tests
 	TF_ACC=1 just test
+	# Save the return code, we want to ensure that we shut down the
+	# container before completing
+	result=$?
 	# Shut down the container
 	just stop-container || true
+	# Exit code of the actual tests:
+	exit $result
 
 # Generate a SITE_ID for the test container in config.env
 site-id:
@@ -77,8 +82,21 @@ init-users:
 	echo "BOWTIE_USERNAME=$username" >> {{envvars}}
 	echo "Generated user $username"
 
+# Pull the latest image tag and set it as an environment variable
+image-var:
+	#!/usr/bin/env bash
+
+	image_var=BOWTIE_IMAGE
+
+	if ! grep ${image_var} {{envvars}} &>/dev/null
+	then
+		image=$(curl --silent https://gitlab.com/api/v4/projects/bowtienet%2Fregistry/registry/repositories/5654678/tags | jq -r 'last | .location')
+		echo "Setting image to ${image}"
+		echo "export ${image_var}=${image}" >> {{envvars}}
+	fi
+
 # Start a background container for bowtie-server
-container cmd=container_cmd: site-id init-users
+container cmd=container_cmd: site-id init-users image-var
 	#!/usr/bin/env bash
 	source {{envvars}}
 	{{cmd}} up --detach
