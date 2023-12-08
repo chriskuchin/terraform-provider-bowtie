@@ -90,12 +90,14 @@ A given site may be associated with more than one range.
 			"weight": schema.Int64Attribute{
 				MarkdownDescription: "The weight for this range. Currently unused but may be in future updates.",
 				Computed:            true,
-				Default:             int64default.StaticInt64(0),
+				Optional:            true,
+				Default:             int64default.StaticInt64(1),
 			},
 			"metric": schema.Int64Attribute{
 				MarkdownDescription: "The metric for this range. Currently unused but may be in future updates.",
 				Computed:            true,
-				Default:             int64default.StaticInt64(0),
+				Optional:            true,
+				Default:             int64default.StaticInt64(255),
 			},
 		},
 	}

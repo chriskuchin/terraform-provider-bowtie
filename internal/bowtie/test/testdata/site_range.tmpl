@@ -1,0 +1,12 @@
+{{ .provider }}
+resource "bowtie_site" "test" {
+  name = "{{ .site_name }}"
+}
+
+resource "bowtie_site_range" "test" {
+  site_id = bowtie_site.test.id
+
+  name = "{{ .range_name }}"
+  description = "{{ .range_description }}"
+  ipv4_range = "{{ .range_ipv4_cidr }}"
+}

@@ -53,13 +53,13 @@ resource "bowtie_site_range" "dc_v6" {
 - `description` (String) Long-form description for this site.
 - `ipv4_range` (String) The IPv4 CIDR range for this site range. **Mutually exclusive with `ipv6_range`**.
 - `ipv6_range` (String) The IPv6 CIDR range for this site range. **Mutually exclusive with `ipv4_range`**.
+- `metric` (Number) The metric for this range. Currently unused but may be in future updates.
+- `weight` (Number) The weight for this range. Currently unused but may be in future updates.
 
 ### Read-Only
 
 - `id` (String) Internal resource ID.
 - `last_updated` (String) Provider metadata for when the last update was performed via Terraform for this resource.
-- `metric` (Number) The metric for this range. Currently unused but may be in future updates.
-- `weight` (Number) The weight for this range. Currently unused but may be in future updates.
 
 ## Import
 
