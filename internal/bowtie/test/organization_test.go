@@ -14,9 +14,9 @@ import (
 )
 
 const (
-	resourceName = "bowtie_organization.org"
-	orgName      = "Test Organization"
-	orgDomain    = "Different DNS Block List name"
+	resourceOrg = "bowtie_organization.org"
+	orgName     = "Test Organization"
+	orgDomain   = "Different DNS Block List name"
 )
 
 func TestAccOrganizationResource(t *testing.T) {
@@ -27,8 +27,8 @@ func TestAccOrganizationResource(t *testing.T) {
 			// created or destroyed, so we rely purely on import to create
 			// the initial resource.
 			{
-				Config:       getOrganizationConfig(resourceName, orgName, orgDomain),
-				ResourceName: resourceName,
+				Config:       getOrganizationConfig(resourceOrg, orgName, orgDomain),
+				ResourceName: resourceOrg,
 				ImportState:  true,
 				// We can’t control what Id the API comes up with for the
 				// organization ID, so derive it dynamically:
@@ -37,10 +37,10 @@ func TestAccOrganizationResource(t *testing.T) {
 				// API, therefore there is no value for it during import.
 				ImportStateVerifyIgnore: []string{"last_updated"},
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "name"),
-					resource.TestCheckResourceAttrSet(resourceName, "domain"),
-					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttrSet(resourceName, "last_updated"),
+					resource.TestCheckResourceAttrSet(resourceOrg, "name"),
+					resource.TestCheckResourceAttrSet(resourceOrg, "domain"),
+					resource.TestCheckResourceAttrSet(resourceOrg, "id"),
+					resource.TestCheckResourceAttrSet(resourceOrg, "last_updated"),
 				),
 			},
 		},

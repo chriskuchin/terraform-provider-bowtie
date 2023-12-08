@@ -40,6 +40,11 @@ func (org *organizationResource) Schema(ctx context.Context, req resource.Schema
 	resp.Schema = schema.Schema{
 		MarkdownDescription: `
 Manage organization information.
+
+**Note**: Organizations are always represented in the Bowtie API and cannot be created or destroyed.
+This resource will **fail** with an error if any Terraform actions attempt to delete or create organizations.
+Instead, you should use an [import](https://developer.hashicorp.com/terraform/language/import) block (or ` + "`terraform import ...`" + ` command) to import the already-existing organization which you can then configure normally.
+If you need to remove an organization from your Terraform state, you may remove it with the ` + "`terraform state rm ...`" + `command.
 `,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
