@@ -40,8 +40,13 @@ acceptance-test: container
 	sleep 5
 	# Run the tests
 	TF_ACC=1 just test
+	# Save the return code, we want to ensure that we shut down the
+	# container before completing
+	result=$?
 	# Shut down the container
 	just stop-container || true
+	# Exit code of the actual tests:
+	exit $result
 
 # Generate a SITE_ID for the test container in config.env
 site-id:
