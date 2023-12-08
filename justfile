@@ -77,8 +77,21 @@ init-users:
 	echo "export BOWTIE_USERNAME=$username" >> {{envvars}}
 	echo "Generated user $username"
 
+# Pull the latest image tag and set it as an environment variable
+image-var:
+	#!/usr/bin/env bash
+
+	image_var=BOWTIE_IMAGE
+
+	if ! grep ${image_var} {{envvars}} &>/dev/null
+	then
+		image=$(curl --silent https://gitlab.com/api/v4/projects/bowtienet%2Fregistry/registry/repositories/5654678/tags | jq -r 'last | .location')
+		echo "Setting image to ${image}"
+		echo "export ${image_var}=${image}" >> {{envvars}}
+	fi
+
 # Start a background container for bowtie-server
-container cmd=container_cmd: site-id init-users
+container cmd=container_cmd: site-id init-users image-var
 	#!/usr/bin/env bash
 	source {{envvars}}
 	{{cmd}} up --detach
