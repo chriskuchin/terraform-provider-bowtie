@@ -15,8 +15,8 @@ import (
 
 const (
 	resourceOrg = "bowtie_organization.org"
-	orgName     = "Test Organization"
-	orgDomain   = "Different DNS Block List name"
+	orgName     = "Demonstration"
+	orgDomain   = "example.com"
 )
 
 func TestAccOrganizationResource(t *testing.T) {
