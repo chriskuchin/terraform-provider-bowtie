@@ -16,10 +16,10 @@ type BowtieUser struct {
 	ID                string `json:"id"`
 	Name              string `json:"name,omitempty"`
 	Email             string `json:"email,omitempty"`
-	AuthzDevices      bool   `json:"authz_devices,omitempty"`
-	AuthzPolicies     bool   `json:"authz_policies,omitempty"`
-	AuthzControlPlane bool   `json:"authz_control_plane,omitempty"`
-	AuthzUsers        bool   `json:"authz_users,omitempty"`
+	AuthzDevices      *bool  `json:"authz_devices,omitempty"`
+	AuthzPolicies     *bool  `json:"authz_policies,omitempty"`
+	AuthzControlPlane *bool  `json:"authz_control_plane,omitempty"`
+	AuthzUsers        *bool  `json:"authz_users,omitempty"`
 	Status            string `json:"status,omitempty"`
 	Role              string `json:"role,omitempty"`
 }
@@ -113,10 +113,10 @@ func (c *Client) UpsertUser(ctx context.Context, id, name, email, role string, a
 		ID:                id,
 		Name:              name,
 		Email:             email,
-		AuthzDevices:      authzDevices,
-		AuthzPolicies:     authzPolicies,
-		AuthzControlPlane: authzControlPlane,
-		AuthzUsers:        authzUsers,
+		AuthzDevices:      &authzDevices,
+		AuthzPolicies:     &authzPolicies,
+		AuthzControlPlane: &authzControlPlane,
+		AuthzUsers:        &authzUsers,
 		Role:              role,
 		Status:            "Active",
 	}
@@ -129,6 +129,8 @@ func (c *Client) UpsertUser(ctx context.Context, id, name, email, role string, a
 	if err != nil {
 		return "", err
 	}
+
+	tflog.Info(ctx, fmt.Sprintf("\n\n%s\n\n", body))
 
 	req, err := http.NewRequest(http.MethodPost, c.getHostURL("/user/upsert"), bytes.NewBuffer(body))
 	if err != nil {
