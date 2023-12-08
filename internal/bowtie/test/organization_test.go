@@ -9,8 +9,8 @@ import (
 
 	"github.com/bowtieworks/terraform-provider-bowtie/internal/bowtie/client"
 	"github.com/bowtieworks/terraform-provider-bowtie/internal/bowtie/provider"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 const (
