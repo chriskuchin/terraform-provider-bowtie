@@ -90,6 +90,7 @@ stop-container cmd=container_cmd:
 # Remove build and container artifacts
 clean:
 	git clean -f -d -x container/
+	cat /dev/null > {{envvars}}
 
 sweep:
 	go test ./internal/bowtie/test -v -sweep=http://localhost:3000
