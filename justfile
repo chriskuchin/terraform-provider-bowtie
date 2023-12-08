@@ -58,7 +58,7 @@ site-id:
 		echo "SITE_ID present in $conf"
 	else
 		set -x
-		echo "export SITE_ID=$(uuidgen)" >> $conf
+		echo "SITE_ID=$(uuidgen)" >> $conf
 	fi
 
 # Generate an init-users file for bootstrapping
@@ -78,8 +78,8 @@ init-users:
 	password=$(openssl rand -hex 16)
 	hash=$(echo -n $password | argon2 $(uuidgen) -i -t 3 -p 1 -m 12 -e)
 	echo $username:$hash > $users_file
-	echo "export BOWTIE_PASSWORD=$password" >> {{envvars}}
-	echo "export BOWTIE_USERNAME=$username" >> {{envvars}}
+	echo "BOWTIE_PASSWORD=$password" >> {{envvars}}
+	echo "BOWTIE_USERNAME=$username" >> {{envvars}}
 	echo "Generated user $username"
 
 # Pull the latest image tag and set it as an environment variable
@@ -108,6 +108,7 @@ stop-container cmd=container_cmd:
 # Remove build and container artifacts
 clean:
 	git clean -f -d -x container/
+	cat /dev/null > {{envvars}}
 
 sweep:
 	go test ./internal/bowtie/test -v -sweep=http://localhost:3000
