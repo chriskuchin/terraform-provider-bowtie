@@ -3,6 +3,7 @@ package client
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 )
 
 type Organization struct {
@@ -12,6 +13,11 @@ type Organization struct {
 	DNS        map[string]DNS `json:"dns"`
 	IPV6Ranges []string       `json:"ipv6_ranges"`
 	Sites      []Site         `json:"sites"`
+}
+
+type OrganizationPayload struct {
+	Name   string `json:"name"`
+	Domain string `json:"domain"`
 }
 
 type Site struct {
@@ -97,4 +103,28 @@ func (c *Client) GetOrganization() (*Organization, error) {
 	err = json.Unmarshal(body, org)
 
 	return org, err
+}
+
+func (c *Client) UpsertOrganization(name string, domain string) error {
+	payload := OrganizationPayload{
+		Name:   name,
+		Domain: domain,
+	}
+
+	requestPayload, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, c.getHostURL("/organization"), strings.NewReader(string(requestPayload)))
+	if err != nil {
+		return err
+	}
+
+	_, err = c.doRequest(req)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
