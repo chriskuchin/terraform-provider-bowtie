@@ -1,0 +1,6 @@
+{{ .provider }}
+
+resource "bowtie_organization" "{{ .resource }}" {
+    name = "{{ .name }}"
+    domain = "{{ .domain }}"
+}

@@ -1,6 +1,6 @@
 services:
   bowtie:
-    image: registry.gitlab.com/bowtienet/registry/bowtie-server-dev:23.11.004-rc.5
+    image: "${BOWTIE_IMAGE}"
     ports:
       - "3000:3000"
     volumes:

@@ -168,6 +168,7 @@ func (b *BowtieProvider) Resources(_ context.Context) []func() resource.Resource
 		resources.NewDNSBlockListResource,
 		resources.NewDNSResource,
 		resources.NewGroupResource,
+		resources.NewOrganizationResource,
 		resources.NewSiteRangeResource,
 		resources.NewSiteResource,
 		resources.NewResourceResource,
