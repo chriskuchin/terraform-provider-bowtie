@@ -16,7 +16,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -115,7 +114,9 @@ Used to control organization DNS settings. ` + "`{{ .Name }}`" + ` can enable re
 				MarkdownDescription: "Limit name resolution for this domain only to these sites.",
 			},
 			"is_dns64": schema.BoolAttribute{
+				Default:             booldefault.StaticBool(true),
 				Optional:            true,
+				Computed:            true,
 				MarkdownDescription: "Whether to resolve names using DNS64.",
 			},
 			"is_counted": schema.BoolAttribute{
@@ -349,8 +350,6 @@ func (d *dnsResource) Update(ctx context.Context, req resource.UpdateRequest, re
 			Order: server.Order.ValueInt64(),
 		})
 	}
-
-	tflog.Info(ctx, fmt.Sprintf("%+v\n\n", plan.DNS64Exclude))
 
 	var excludes []client.DNSExclude = []client.DNSExclude{}
 	for order, exclude := range plan.DNS64Exclude {

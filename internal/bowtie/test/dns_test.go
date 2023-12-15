@@ -27,6 +27,7 @@ func TestAccDNSResource(t *testing.T) {
 					resource.TestCheckResourceAttr("bowtie_dns.test", "name", "chrisk-test.example.com"),
 					resource.TestCheckResourceAttr("bowtie_dns.test", "servers.0.addr", "1.1.1.1"),
 					resource.TestCheckResourceAttr("bowtie_dns.test", "servers.1.addr", "4.4.4.4"),
+					resource.TestCheckResourceAttr("bowtie_dns.test", "is_dns64", "true"),
 					resource.TestCheckResourceAttrSet("bowtie_dns.test", "servers.0.id"),
 					resource.TestCheckResourceAttrSet("bowtie_dns.test", "servers.0.order"),
 					resource.TestCheckResourceAttr("bowtie_dns.test", "excludes.0.name", "wrong.example.com"),
@@ -50,6 +51,7 @@ func TestAccDNSResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("bowtie_dns.test", "name", "chrisk-test.example.com"),
 					resource.TestCheckResourceAttr("bowtie_dns.test", "servers.0.addr", "1.1.1.1"),
+					resource.TestCheckResourceAttr("bowtie_dns.test", "is_dns64", "true"),
 					resource.TestCheckResourceAttrSet("bowtie_dns.test", "servers.0.id"),
 					resource.TestCheckResourceAttrSet("bowtie_dns.test", "servers.0.order"),
 					resource.TestCheckNoResourceAttr("bowtie_dns.test", "servers.1.addr"),
@@ -76,6 +78,7 @@ func TestAccDNSResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("bowtie_dns.test", "name", "chrisk-test.example.com"),
 					resource.TestCheckResourceAttr("bowtie_dns.test", "servers.0.addr", "1.1.1.1"),
+					resource.TestCheckResourceAttr("bowtie_dns.test", "is_dns64", "true"),
 					resource.TestCheckResourceAttrSet("bowtie_dns.test", "servers.0.id"),
 					resource.TestCheckResourceAttrSet("bowtie_dns.test", "servers.0.order"),
 					resource.TestCheckNoResourceAttr("bowtie_dns.test", "servers.1.addr"),
@@ -102,6 +105,7 @@ func TestAccDNSResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("bowtie_dns.test", "name", "chrisk-test.example.com"),
 					resource.TestCheckResourceAttr("bowtie_dns.test", "servers.0.addr", "1.1.1.1"),
+					resource.TestCheckResourceAttr("bowtie_dns.test", "is_dns64", "true"),
 					resource.TestCheckResourceAttrSet("bowtie_dns.test", "servers.0.id"),
 					resource.TestCheckResourceAttrSet("bowtie_dns.test", "servers.0.order"),
 					resource.TestCheckNoResourceAttr("bowtie_dns.test", "servers.1.addr"),
@@ -128,6 +132,7 @@ func TestAccDNSResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("bowtie_dns.test", "name", "chrisk-test.example.com"),
 					resource.TestCheckResourceAttr("bowtie_dns.test", "servers.0.addr", "1.1.1.1"),
+					resource.TestCheckResourceAttr("bowtie_dns.test", "is_dns64", "true"),
 					resource.TestCheckResourceAttrSet("bowtie_dns.test", "servers.0.id"),
 					resource.TestCheckResourceAttrSet("bowtie_dns.test", "servers.0.order"),
 					resource.TestCheckNoResourceAttr("bowtie_dns.test", "servers.1.addr"),
@@ -156,6 +161,7 @@ func TestAccDNSResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("bowtie_dns.test", "name", "chrisk-test.example.com"),
 					resource.TestCheckResourceAttr("bowtie_dns.test", "servers.0.addr", "1.1.1.1"),
+					resource.TestCheckResourceAttr("bowtie_dns.test", "is_dns64", "true"),
 					resource.TestCheckResourceAttrSet("bowtie_dns.test", "servers.0.id"),
 					resource.TestCheckResourceAttrSet("bowtie_dns.test", "servers.0.order"),
 					resource.TestCheckNoResourceAttr("bowtie_dns.test", "servers.1.addr"),
@@ -184,6 +190,7 @@ func TestAccDNSResource(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("bowtie_dns.test", "name", "chrisk-test.example.com"),
 					resource.TestCheckResourceAttr("bowtie_dns.test", "servers.0.addr", "1.1.1.1"),
+					resource.TestCheckResourceAttr("bowtie_dns.test", "is_dns64", "true"),
 					resource.TestCheckResourceAttrSet("bowtie_dns.test", "servers.0.id"),
 					resource.TestCheckResourceAttrSet("bowtie_dns.test", "servers.0.order"),
 					resource.TestCheckNoResourceAttr("bowtie_dns.test", "servers.1.addr"),

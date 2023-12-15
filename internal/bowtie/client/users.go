@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 type BowtieUser struct {
@@ -42,13 +41,11 @@ func (c *Client) GetUsers() (map[string]BowtieUser, error) {
 
 func (c *Client) GetUserByEmail(ctx context.Context, email string) (BowtieUser, error) {
 	users, err := c.GetUsers()
-	tflog.Info(ctx, fmt.Sprintf("%+v", users))
 	if err != nil {
 		return BowtieUser{}, err
 	}
 
 	for _, user := range users {
-		fmt.Printf("%s - %s\n\n", user.Email, email)
 		if user.Email == strings.TrimSpace(email) {
 			return user, nil
 		}
@@ -129,8 +126,6 @@ func (c *Client) UpsertUser(ctx context.Context, id, name, email, role string, a
 	if err != nil {
 		return "", err
 	}
-
-	tflog.Info(ctx, fmt.Sprintf("\n\n%s\n\n", body))
 
 	req, err := http.NewRequest(http.MethodPost, c.getHostURL("/user/upsert"), bytes.NewBuffer(body))
 	if err != nil {
