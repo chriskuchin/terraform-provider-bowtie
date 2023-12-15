@@ -1,4 +1,7 @@
 [[commands]]
+package = "yq"
+
+[[commands]]
 package = "git"
 
 [[commands]]

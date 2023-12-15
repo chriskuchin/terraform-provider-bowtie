@@ -86,14 +86,9 @@ init-users:
 image-var:
 	#!/usr/bin/env bash
 
-	image_var=BOWTIE_IMAGE
-
-	if ! grep ${image_var} {{envvars}} &>/dev/null
-	then
 		image=$(curl --silent https://gitlab.com/api/v4/projects/bowtienet%2Fregistry/registry/repositories/5654678/tags | jq -r 'last | .location')
 		echo "Setting image to ${image}"
-		echo "${image_var}=${image}" >> {{envvars}}
-	fi
+		yq -i -Y --arg image "${image}" '.services.bowtie.image = $image' compose.yaml
 
 # Start a background container for bowtie-server
 container cmd=container_cmd: site-id init-users image-var
