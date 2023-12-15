@@ -92,13 +92,11 @@ image-var:
 	then
 		image=$(curl --silent https://gitlab.com/api/v4/projects/bowtienet%2Fregistry/registry/repositories/5654678/tags | jq -r 'last | .location')
 		echo "Setting image to ${image}"
-		echo "export ${image_var}=${image}" >> {{envvars}}
+		echo "${image_var}=${image}" >> {{envvars}}
 	fi
 
 # Start a background container for bowtie-server
 container cmd=container_cmd: site-id init-users image-var
-	#!/usr/bin/env bash
-	source {{envvars}}
 	{{cmd}} up --detach
 
 # Stop the background container
